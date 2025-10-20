@@ -1,0 +1,6 @@
+@stackly_backend_HostAddress = http://localhost:5189
+
+GET {{stackly_backend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
