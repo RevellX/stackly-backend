@@ -25,5 +25,3 @@ dotnet run
 
 3. Access Swagger UI to see and interact with API
 - /swagger/index.html
-
-## Implemented endpoints
