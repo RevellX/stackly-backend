@@ -1,11 +1,12 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 using StacklyBackend.Models;
 using StacklyBackend.Utils.DataGenerator;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ItemController : ControllerBase
 {
     private static AppDbContext _context = new AppDbContext();
@@ -63,7 +64,7 @@ public class ItemController : ControllerBase
 
     [HttpGet]
     [Route("{itemId}")]
-    public async Task<ActionResult<Item>> Get([FromRoute] string itemId)
+    public ActionResult<Item> Get([FromRoute] string itemId)
     {
         var dbItem = _context.Items.FirstOrDefault(p => p.Id.Equals(itemId));
         if (dbItem is null)
@@ -134,7 +135,7 @@ public class ItemController : ControllerBase
 
     [HttpDelete]
     [Route("{itemId}")]
-    public async Task<ActionResult<Item>> Delete([FromRoute] string itemId)
+    public ActionResult<Item> Delete([FromRoute] string itemId)
     {
         var dbItem = _context.Items.Where(p => p.Id.Equals(itemId)).ExecuteDelete();
         return Ok(dbItem);
