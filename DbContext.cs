@@ -3,6 +3,7 @@ using StacklyBackend.Models;
 public class AppDbContext : DbContext
 {
     public DbSet<Example> Examples { get; set; }
+    public DbSet<User> Users { get; set; }
     public string DbPath { get; }
 
     public AppDbContext()
