@@ -485,6 +485,3 @@ $RECYCLE.BIN/
 
 # Development files
 [Rr]equests.http
-
-# Database files
-[Mm]igrations/
