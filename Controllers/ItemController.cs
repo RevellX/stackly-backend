@@ -59,7 +59,11 @@ public class ItemController : ControllerBase
             query = query.Where(i => i.Quantity <= maxQty);
 
         var items = query.ToList();
-        return Ok(items);
+        return Ok(new
+        {
+            itemsCount = 10,
+            items
+        });
     }
 
     [HttpGet]
@@ -93,7 +97,8 @@ public class ItemController : ControllerBase
             Id = id,
             Name = item.Name,
             Description = item.Description,
-            Quantity = item.Quantity
+            Quantity = item.Quantity,
+            CategoryName = item.CategoryName
         };
 
         _context.Items.Add(newItem);
