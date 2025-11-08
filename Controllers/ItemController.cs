@@ -24,12 +24,17 @@ public class ItemController : ControllerBase
         string? byDescription,
         string? byQuantity,
         string? byMinQuantity,
-        string? byMaxQuantity
+        string? byMaxQuantity,
+        int page = 1,
+        int itemsPerPage = 18
         )
     {
+        if (page < 1) page = 1;
+        if (itemsPerPage < 1) itemsPerPage = 1;
         // var query = _context.Items.AsQueryable(); // <- This is preffered, but can't use OrdinalIgnoreCase while filtering
         var query = _context.Items
         .Include(i => i.Category)
+        .OrderBy(i => i.Name)
         .AsEnumerable(); // <- This is slower, because it fetches all data to RAM and then filters it
 
         if (!string.IsNullOrWhiteSpace(byId))
@@ -58,11 +63,22 @@ public class ItemController : ControllerBase
         if (!string.IsNullOrWhiteSpace(byMaxQuantity) && int.TryParse(byMaxQuantity, out var maxQty))
             query = query.Where(i => i.Quantity <= maxQty);
 
-        var items = query.ToList();
+        var itemsCount = query.Count();
+
+        int totalPages = (itemsCount / itemsPerPage) + (itemsCount % itemsPerPage != 0 ? 1 : 0);
+        if (page > totalPages) page = totalPages;
+        int currentPage = page;
+
+        var items = query.Skip((page - 1) * itemsPerPage);
+        items = items.Take(itemsPerPage);
+
         return Ok(new
         {
-            itemsCount = 10,
-            items
+            CurrentPage = page,
+            TotalPages = totalPages,
+            ItemsPerPage = itemsPerPage,
+            TotalItems = itemsCount,
+            Items = items.ToList()
         });
     }
 
