@@ -1,10 +1,10 @@
 using System.Net;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using stackly.Models;
-using stackly.Utils;
+using StacklyBackend.Models;
+using StacklyBackend.Utils;
 
-namespace stackly.Controllers;
+namespace StacklyBackend.Controllers;
 
 public class ExampleController : Controller
 {

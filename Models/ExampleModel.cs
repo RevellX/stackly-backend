@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 
-namespace stackly.Models;
+namespace StacklyBackend.Models;
 
 public class Example
 {

@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
-namespace stackly.Models;
+namespace StacklyBackend.Models;
 
 public class User
 {

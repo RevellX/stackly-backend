@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using stackly.Models;
+using StacklyBackend.Models;
 
-namespace stackly.Controllers;
+namespace StacklyBackend.Controllers;
 
 public class HomeController : Controller
 {

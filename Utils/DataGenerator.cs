@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace stackly.Utils;
+namespace StacklyBackend.Utils;
 
 enum StringType
 {

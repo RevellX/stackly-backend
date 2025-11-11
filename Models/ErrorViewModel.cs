@@ -1,4 +1,4 @@
-namespace stackly.Models;
+namespace StacklyBackend.Models;
 
 public class ErrorViewModel
 {
