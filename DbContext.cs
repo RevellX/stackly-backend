@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using StacklyBackend.Models;
+using stackly.Models;
 public class AppDbContext : DbContext
 {
     public DbSet<Example> Examples { get; set; }

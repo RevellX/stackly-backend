@@ -1,7 +1,7 @@
 using System;
 using System.Security.Cryptography;
 
-namespace Utils
+namespace stackly.Utils
 {
     /// <summary>
     /// Utility for hashing and verifying passwords using PBKDF2 (HMAC-SHA256).

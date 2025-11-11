@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace StacklyBackend.Utils.DataGenerator;
+namespace stackly.Utils;
 
 enum StringType
 {
