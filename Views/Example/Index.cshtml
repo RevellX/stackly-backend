@@ -1,4 +1,4 @@
-@model List<stackly.Models.Example>
+@model List<StacklyBackend.Models.Example>
 
 @{
     ViewData["Title"] = "Index";
@@ -8,7 +8,7 @@
 <a href="/example/create"><button>Add new example</button></a>
 <p>Items list: </p>
 <ul>
-    @foreach (var item in Model.ToArray() ?? Array.Empty<stackly.Models.Example>())
+    @foreach (var item in Model.ToArray() ?? Array.Empty<StacklyBackend.Models.Example>())
     {
         <li>@item.Id @(item.Name) @(item.Price) <a href="/example/delete/@item.Id">Delete</a> <a href="/example/edit/@item.Id">Edit</a></li>
     }
