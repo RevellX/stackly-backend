@@ -1,0 +1,17 @@
+@model StacklyBackend.Models.Example;
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<h2>Example - @ViewData["Title"]</h2>
+<a href="/example"><button type="button" aria-label="Go back">Go to list</button></a>
+<p>Item delete confirmation form: </p>
+<form action="/example/delete/@Model.Id" method="post">
+    @Html.AntiForgeryToken()
+    <div>
+        <p>Are you sure you wan to delete @Model.Name?</p>
+    </div>
+    <a href="/example"><button type="button" aria-label="Deny">No</button></a>
+    <button type="submit">Yes</button>
+</form>
