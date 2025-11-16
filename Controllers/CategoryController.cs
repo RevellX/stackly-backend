@@ -39,23 +39,34 @@ public class CategoryController : Controller
     // POST: Category/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public ActionResult Create([Bind(include: "Name,DisplayName")] Category category)
+    public ActionResult Create([Bind(include: "Name")] CategoryCreate category)
     {
         if (ModelState.IsValid)
         {
-            var dbCategory = _context.Categories.Find(category.Name);
+            var dbCategory = _context.Categories
+                       .FirstOrDefault(c => c.Name == category.Name);
+
             if (dbCategory is not null)
             {
+                ViewData["error"] = $"Category with name: \"{category.Name}\" already exists";
+            }
+            else
+            {
+                string id;
+                do
+                {
+                    id = Generator.GetRandomString(StringType.Alphanumeric, StringCase.Lowercase, 10);
+                } while (_context.Examples.FirstOrDefault(p => p.Id.Equals(id)) is not null);
+
                 _context.Categories.Add(new Category
                 {
-                    Name = category.Name,
-                    DisplayName = category.DisplayName
+                    Id = id,
+                    Name = category.Name
                 });
                 _context.SaveChanges();
                 return RedirectToAction("Index");
             }
         }
-        ViewData["error"] = "There has been an error while creating new category";
         return View(category);
     }
 
@@ -72,19 +83,25 @@ public class CategoryController : Controller
     // POST: Category/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public ActionResult Edit(string id, [Bind(include: "Name, DisplayName")] Category category)
+    public ActionResult Edit(string id, [Bind(include: "Name")] CategoryCreate category)
     {
         if (ModelState.IsValid)
         {
             var dbCategory = _context.Categories.Find(id);
             if (dbCategory is null)
                 return NotFound();
-            dbCategory.Name = category.Name;
-            dbCategory.DisplayName = category.DisplayName;
-            _context.SaveChanges();
-            return RedirectToAction("Index");
+            var otherDbCategory = _context.Categories.FirstOrDefault(c => c.Name == category.Name);
+            if (otherDbCategory is not null)
+            {
+                ViewData["error"] = $"Category with name: \"{category.Name}\" already exists";
+            }
+            else
+            {
+                dbCategory.Name = category.Name;
+                _context.SaveChanges();
+                return RedirectToAction("Index");
+            }
         }
-        ViewData["error"] = "There has been an error while editing category";
         return View(category);
     }
 

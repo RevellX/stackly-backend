@@ -10,6 +10,6 @@
 <ul>
     @foreach (Category item in Model.ToArray() ?? Array.Empty<StacklyBackend.Models.Category>())
     {
-        <li>@item.Name  @(item.DisplayName) <a href="/category/delete/@item.Name">Delete</a> <a href="/category/edit/@item.Name">Edit</a></li>
+        <li>@item.Id @item.Name<a href="/category/details/@item.Id">Details</a> <a href="/category/delete/@item.Id">Delete</a> <a href="/category/edit/@item.Id">Edit</a></li>
     }
 </ul>
