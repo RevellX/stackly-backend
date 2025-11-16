@@ -1,0 +1,15 @@
+@model List<StacklyBackend.Models.Category>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h2>Category - @ViewData["Title"]</h2>
+<a href="/category/create"><button>Add new category</button></a>
+<p>Categories list: </p>
+<ul>
+    @foreach (Category item in Model.ToArray() ?? Array.Empty<StacklyBackend.Models.Category>())
+    {
+        <li>@item.Name  @(item.DisplayName) <a href="/category/delete/@item.Name">Delete</a> <a href="/category/edit/@item.Name">Edit</a></li>
+    }
+</ul>

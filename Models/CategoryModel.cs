@@ -10,9 +10,3 @@ public class Category
     [AllowNull]
     public string DisplayName { get; set; } = string.Empty;
 }
-
-public class CategoryEdit
-{
-    [Required]
-    public string DisplayName { get; set; } = string.Empty;
-}
