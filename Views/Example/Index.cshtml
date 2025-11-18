@@ -1,15 +1,26 @@
 @model List<StacklyBackend.Models.Example>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Katalog Produktów";
 }
 
-<h2>Example - @ViewData["Title"]</h2>
-<a href="/example/create"><button>Add new example</button></a>
-<p>Items list: </p>
-<ul>
-    @foreach (var item in Model.ToArray() ?? Array.Empty<StacklyBackend.Models.Example>())
-    {
-        <li>@item.Id @(item.Name) @(item.Price) <a href="/example/delete/@item.Id">Delete</a> <a href="/example/edit/@item.Id">Edit</a></li>
-    }
-</ul>
+<div class="third-box">
+
+<div class="card-products">
+                @foreach (var item in Model.ToArray() ?? Array.Empty<StacklyBackend.Models.Example>())
+                {
+ 
+                        <div class="card-product">   
+                            <h3 class="product-title">
+                                @(item.Name)
+                            </h3>
+                            <p class="product-id">
+                                @item.Id 
+                            </p>
+                            @(item.Price) 
+                            <a href="/example/delete/@item.Id">Delete</a> <a href="/example/edit/@item.Id">Edit</a>
+                        </div>
+                    
+                }
+    </div>
+</div>

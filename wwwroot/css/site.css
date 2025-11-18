@@ -123,6 +123,10 @@ body {
     justify-content: center;
     padding-right: 40px;
 }
+
+.add-box a {
+    text-decoration: none;
+}
 .add-btn {
     background-color: var(--primary-blue);
     color: white;
