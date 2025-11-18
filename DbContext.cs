@@ -5,8 +5,8 @@ public class AppDbContext : DbContext
     public DbSet<Example> Examples { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Item> Items { get; set; }
-
     public DbSet<Category> Categories { get; set; }
+
     public string DbPath { get; }
 
     public AppDbContext()

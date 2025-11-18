@@ -1,0 +1,25 @@
+@model StacklyBackend.Models.CategoryCreate
+@using Microsoft.CodeAnalysis.Differencing
+@{
+    var error = ViewData["Error"] as string;
+    ViewData["Title"] = "Create";
+}
+<h2>Category - @ViewData["Title"]</h2>
+<a href="/category"><button aria-label="Go back">Go to list</button></a>
+<p>Category form: </p>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div role="alert" class="validation-summary-errors">
+        @error
+    </div>
+}
+
+<form action="/category/create" method="post">
+    @Html.AntiForgeryToken()
+    <div>
+        <label for="Name">Name</label>
+        <input type="text" id="Name" name="Name" value="@Model?.Name"/>
+    </div>
+    <button type="submit">Create</button>
+</form>

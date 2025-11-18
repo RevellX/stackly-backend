@@ -6,13 +6,14 @@ namespace StacklyBackend.Models;
 public class Category
 {
     [Key]
+    [StringLength(10)]
+    public string Id { get; set; } = string.Empty;
+    [Required]
     public string Name { get; set; } = string.Empty;
-    [AllowNull]
-    public string DisplayName { get; set; } = string.Empty;
 }
 
-public class CategoryEdit
+public class CategoryCreate
 {
     [Required]
-    public string DisplayName { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
 }
