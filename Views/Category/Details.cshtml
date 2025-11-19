@@ -1,0 +1,14 @@
+@model StacklyBackend.Models.Category;
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h2>Category - @ViewData["Title"]</h2>
+<a href="/category"><button aria-label="Go back">Go to list</button></a>
+<p>Category details: </p>
+
+<p>@Model.Id</p>
+<p>@Model.Name</p>
+
+<a href="/category/delete/@Model.Id">Delete</a> <a href="/category/edit/@Model.Id">Edit</a>
