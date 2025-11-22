@@ -42,4 +42,38 @@ public class ItemController : Controller
 
         return View(items.ToList());
     }
+
+    public ActionResult Create()
+    {
+        return View();
+    }
+    
+    [HttpPost]
+    public ActionResult Create([Bind(include: "Name,Description,Quantity,CategoryId")] ItemCreate item)
+    {
+        if (ModelState.IsValid)
+        {
+            string id;
+            do
+            {
+                id = Generator.GetRandomString(StringType.Alphanumeric, StringCase.Lowercase, 10);
+            } while (_context.Items.FirstOrDefault(p => p.Id.Equals(id)) is not null);
+
+            _context.Items.Add(new Item
+            {
+                Id = id,
+                Name = item.Name,
+                Description = item.Description,
+                Quantity = item.Quantity,
+                CategoryId = item.CategoryId,
+                
+            });
+            _context.SaveChanges();
+            return RedirectToAction("Index");
+        }
+        ViewData["error"] = "There has beed an error while creating new example";
+        return View(item);
+    }
 }
+
+
