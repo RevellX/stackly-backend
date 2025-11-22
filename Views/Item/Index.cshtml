@@ -5,7 +5,7 @@
 }
 
 <h2>Item - @ViewData["Title"]</h2>
-<a href="/item/create"><button>Add new item</button></a>
+
 <p>Items list: </p>
 <ul>
     @foreach (var item in Model.ToArray() ?? Array.Empty<StacklyBackend.Models.Item>())
