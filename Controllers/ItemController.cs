@@ -45,9 +45,10 @@ public class ItemController : Controller
 
     public ActionResult Create()
     {
+        ViewData["categories"] = _context.Categories.ToList();
         return View();
     }
-    
+
     [HttpPost]
     public ActionResult Create([Bind(include: "Name,Description,Quantity,CategoryId")] ItemCreate item)
     {
@@ -65,14 +66,87 @@ public class ItemController : Controller
                 Name = item.Name,
                 Description = item.Description,
                 Quantity = item.Quantity,
-                CategoryId = item.CategoryId,
-                
+                CategoryId = null
+
             });
             _context.SaveChanges();
             return RedirectToAction("Index");
         }
-        ViewData["error"] = "There has beed an error while creating new example";
+        ViewData["categories"] = _context.Categories.ToList();
+        ViewData["error"] = "There has beed an error while creating new item";
         return View(item);
+    }
+
+    // GET: Item/Details/5
+    public ActionResult Details(string id)
+    {
+        var item = _context.Items.Find(id);
+        if (item is null)
+            return NotFound();
+
+        return View(item);
+    }
+
+    // GET: Item/Edit/5
+    public ActionResult Edit(string id)
+    {
+        var item = _context.Items.Find(id);
+        if (item is null)
+            return NotFound();
+
+        return View(item);
+    }
+
+    // POST: Item/Edit/5
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public ActionResult Edit(string id, [Bind(include: "Name,Description,Quantity")] Item item)
+    {
+        if (ModelState.IsValid)
+        {
+            var dbitem = _context.Items.Find(id);
+            if (dbitem is null)
+                return NotFound();
+            dbitem.Name = item.Name;
+            dbitem.Description = item.Description;
+            dbitem.Quantity = item.Quantity;
+            _context.SaveChanges();
+            return RedirectToAction("Index");
+        }
+
+        return View(item);
+    }
+    // GET: Item/Delete/5
+    public ActionResult Delete(string id)
+    {
+        if (id is null)
+            return BadRequest();
+
+        var item = _context.Items.Find(id);
+        if (item == null)
+            return NotFound();
+
+        return View(item);
+    }
+
+    // POST: Item/Delete/5
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public ActionResult DeleteConfirmed(string id)
+    {
+        var item = _context.Items.Find(id);
+        if (item is null)
+            return NotFound();
+        _context.Items.Remove(item);
+        _context.SaveChanges();
+        return RedirectToAction("Index");
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+            _context.Dispose();
+        base.Dispose(disposing);
     }
 }
 
