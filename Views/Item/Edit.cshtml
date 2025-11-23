@@ -30,5 +30,14 @@
         <label for="Quantity">Quantity</label>
         <input type="text" id="Quantity" name="Quantity" value="@Model?.Quantity"/>
     </div>
+    <div>
+        <select name="CategoryId" id="CategoryId" value="@Model?.CategoryId">
+            <option value="">Brak kategorii</option>
+            @foreach (var cat in (ViewData["categories"] as IEnumerable<StacklyBackend.Models.Category>) ?? Array.Empty<StacklyBackend.Models.Category>())
+            {
+                <option value="@cat.Id">@cat.Name</option>
+            }
+        </select>
+    </div>
     <button type="submit">Edit</button>
 </form>
