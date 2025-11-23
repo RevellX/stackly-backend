@@ -40,7 +40,7 @@ public class ItemController : Controller
                 i.Quantity <= query.MaxQuantity.Value
             );
 
-        return View(items.ToList());
+        return View(items.Include(i => i.Category).ToList());
     }
 
     public ActionResult Create()
@@ -60,14 +60,16 @@ public class ItemController : Controller
                 id = Generator.GetRandomString(StringType.Alphanumeric, StringCase.Lowercase, 10);
             } while (_context.Items.FirstOrDefault(p => p.Id.Equals(id)) is not null);
 
+            if (!_context.Categories.Any(c => c.Id == item.CategoryId))
+                return NotFound();
+
             _context.Items.Add(new Item
             {
                 Id = id,
                 Name = item.Name,
                 Description = item.Description,
                 Quantity = item.Quantity,
-                CategoryId = null
-
+                CategoryId = item.CategoryId
             });
             _context.SaveChanges();
             return RedirectToAction("Index");
@@ -80,7 +82,7 @@ public class ItemController : Controller
     // GET: Item/Details/5
     public ActionResult Details(string id)
     {
-        var item = _context.Items.Find(id);
+        var item = _context.Items.Include(i => i.Category).FirstOrDefault(i => i.Id == id);
         if (item is null)
             return NotFound();
 
@@ -90,30 +92,35 @@ public class ItemController : Controller
     // GET: Item/Edit/5
     public ActionResult Edit(string id)
     {
-        var item = _context.Items.Find(id);
+        var item = _context.Items.Include(i => i.Category).FirstOrDefault(i => i.Id == id);
         if (item is null)
             return NotFound();
-
+        ViewData["categories"] = _context.Categories.ToList();
         return View(item);
     }
 
     // POST: Item/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public ActionResult Edit(string id, [Bind(include: "Name,Description,Quantity")] Item item)
+    public ActionResult Edit(string id, [Bind(include: "Name,Description,Quantity,CategoryId")] Item item)
     {
         if (ModelState.IsValid)
         {
-            var dbitem = _context.Items.Find(id);
+            var dbitem = _context.Items.Include(i => i.Category).FirstOrDefault(i => i.Id == id);
             if (dbitem is null)
                 return NotFound();
+
+            if (!_context.Categories.Any(c => c.Id == item.CategoryId))
+                return NotFound();
+
             dbitem.Name = item.Name;
             dbitem.Description = item.Description;
             dbitem.Quantity = item.Quantity;
+            dbitem.CategoryId = item.CategoryId;
             _context.SaveChanges();
             return RedirectToAction("Index");
         }
-
+        ViewData["categories"] = _context.Categories.ToList();
         return View(item);
     }
     // GET: Item/Delete/5

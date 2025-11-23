@@ -11,6 +11,8 @@
     <tr>
         <th>Id</th>
         <th>Name</th>
+        <th>Description</th>
+        <th>CategoryId</th>
         <th>Category</th>
         <th>Actions</th>
     </tr>
@@ -19,6 +21,8 @@
         <tr>
             <td>@item.Id</td>
             <td>@item.Name</td>
+            <td>@item?.Description</td>
+            <td>@item.CategoryId</td>
             <td>@item.Category?.Name</td>
             <td><a href="/item/delete/@item.Id">Delete</a></td>
             <td><a href="/item/edit/@item.Id">Edit</a></td>

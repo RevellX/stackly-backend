@@ -15,6 +15,9 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
+        ViewData["items_stored_total"] = 0;
+        ViewData["categories_stored_total"] = 0;
+        ViewData["users_stored_total"] = 0;
         return View();
     }
 
