@@ -1,0 +1,28 @@
+@model List<StacklyBackend.Models.Item>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h2>Item - @ViewData["Title"]</h2>
+
+<p>Items list: </p>
+<table>
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Category</th>
+        <th>Actions</th>
+    </tr>
+    @foreach (var item in Model.ToArray() ?? Array.Empty<StacklyBackend.Models.Item>())
+    {
+        <tr>
+            <td>@item.Id</td>
+            <td>@item.Name</td>
+            <td>@item.Category?.Name</td>
+            <td><a href="/item/delete/@item.Id">Delete</a></td>
+            <td><a href="/item/edit/@item.Id">Edit</a></td>
+            <td><a href="/item/details/@item.Id">Details</a></td>
+        </tr>
+    }
+</table>

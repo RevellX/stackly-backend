@@ -1,0 +1,43 @@
+@model StacklyBackend.Models.ItemCreate
+@using Microsoft.CodeAnalysis.Differencing
+@{
+    var error = ViewData["Error"] as string;
+    ViewData["Title"] = "Create";
+}
+<h2>Item - @ViewData["Title"]</h2>
+<a href="/item"><button type="button" aria-label="Go back">Go to list</button></a>
+<p>Item form: </p>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div role="alert" class="validation-summary-errors">
+        @error
+    </div>
+}
+
+<form action="/item/create" method="post">
+    @Html.AntiForgeryToken()
+    <div>
+        <label for="Name">Name</label>
+        <input type="text" id="Name" name="Name" value="@Model?.Name"/>
+    </div>
+    <div>
+        <label for="Description">Description</label>
+        <input type="text" id="Description" name="Description" value="@Model?.Description"/>
+    </div>
+    <div>
+        <label for="Quantity">Quantity</label>
+        <input type="text" id="Quantity" name="Quantity" value="@Model?.Quantity"/>
+    </div>
+    <div>
+        <label for="CategoryId">Category</label>
+        <select name="CategoryId" id="CategoryId" value="@Model?.CategoryId">
+        <option value="">Brak kategorii</option>
+            @foreach (var cat in (ViewData["categories"] as IEnumerable<StacklyBackend.Models.Category>) ?? Array.Empty<StacklyBackend.Models.Category>())
+            {
+                <option value="@cat.Id">@cat.Name</option>
+            }
+        </select>
+    </div>
+    <button type="submit">Create</button>
+</form>

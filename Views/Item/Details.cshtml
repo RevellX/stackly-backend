@@ -1,0 +1,13 @@
+@model StacklyBackend.Models.Item;
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h2>Item - @ViewData["Title"]</h2>
+<p>Item details: </p>
+
+<p>@Model.Id</p>
+<p>@Model.Name</p>
+<p>@Model.Description</p>
+<p>@Model.Quantity</p>
