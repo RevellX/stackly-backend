@@ -17,6 +17,10 @@ public class CategoryController : Controller
     // GET: Category
     public ActionResult Index()
     {
+        if (User.Identity == null || !User.Identity.IsAuthenticated)
+        {
+            return RedirectToPage("/Account/Login", new { area = "Identity" });
+        }
         return View(_context.Categories.ToList());
     }
 
@@ -67,6 +71,7 @@ public class CategoryController : Controller
                 return RedirectToAction("Index");
             }
         }
+
         return View(category);
     }
 

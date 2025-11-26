@@ -39,12 +39,19 @@ public class ItemController : Controller
             items = items.Where(i =>
                 i.Quantity <= query.MaxQuantity.Value
             );
-
+        if (User.Identity == null || !User.Identity.IsAuthenticated)
+        {
+            return RedirectToPage("/Account/Login", new { area = "Identity" });
+        }
         return View(items.ToList());
     }
 
     public ActionResult Create()
     {
+        if (User.Identity == null || !User.Identity.IsAuthenticated)
+        {
+            return RedirectToPage("/Account/Login", new { area = "Identity" });
+        }
         ViewData["categories"] = _context.Categories.ToList();
         return View();
     }
