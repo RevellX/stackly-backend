@@ -304,3 +304,12 @@ footer {
 .text-danger {
     color: red
 }
+
+
+/* Item details */
+.details-container {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}

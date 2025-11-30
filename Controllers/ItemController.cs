@@ -19,8 +19,8 @@ public class ItemController : Controller
     // Accept optional route/query parameters (bound from route or query string)
     public ActionResult Index([FromQuery] ItemQuery query)
     {
-        var items = _context.Items.AsQueryable();
-
+        // var items = _context.Items.AsQueryable();
+        var items = _context.Items.Include(i => i.Category).AsQueryable();
         string? search = string.IsNullOrWhiteSpace(query.Search) ? null : $"%{query.Search}%";
 
         if (!string.IsNullOrEmpty(search))

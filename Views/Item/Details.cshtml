@@ -5,9 +5,15 @@
 }
 
 <h2>Item - @ViewData["Title"]</h2>
-<p>Item details: </p>
+@* <p>Item details: </p> *@
 
-<p>@Model.Id</p>
-<p>@Model.Name</p>
-<p>@Model.Description</p>
-<p>@Model.Quantity</p>
+
+<div class="details-container">
+    <ul>
+        <li>Product ID: <b>@Model.Id</b></li>
+        <li>Product Name: <b>@Model.Name</b></li>
+        <li>Product Description: <b>@Model.Description</b></li>
+        <li>Product Quantity: <b>@Model.Quantity</b></li>
+    </ul>
+
+</div>
