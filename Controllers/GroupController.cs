@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StacklyBackend.Models;
 using StacklyBackend.Utils;
 
 namespace StacklyBackend.Controllers;
 
+[Authorize]
 public class GroupController : Controller
 {
     private static AppDbContext _context = new AppDbContext();

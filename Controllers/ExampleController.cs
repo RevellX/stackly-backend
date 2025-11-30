@@ -13,6 +13,12 @@ public class ExampleController : Controller
         _context = new AppDbContext();
     }
 
+    // GET: InitData
+    public string InitData()
+    {
+
+        return "0";
+    }
 
     // GET: Example
     public ActionResult Index()

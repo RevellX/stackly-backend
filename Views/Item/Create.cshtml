@@ -31,11 +31,11 @@
     </div>
     <div>
         <label for="CategoryId">Category</label>
-        <select name="CategoryId" id="CategoryId" value="@Model?.CategoryId">
-        <option value="">Brak kategorii</option>
+        <select name="CategoryId" id="CategoryId">
+        <option disabled selected>-- Wybierz kategorię --</option>
             @foreach (var cat in (ViewData["categories"] as IEnumerable<StacklyBackend.Models.Category>) ?? Array.Empty<StacklyBackend.Models.Category>())
             {
-                <option value="@cat.Id">@cat.Name</option>
+                <option selected='@(Model?.CategoryId == cat.Id ? "selected" : null)' value="@cat.Id">@cat.Name</option>
             }
         </select>
     </div>

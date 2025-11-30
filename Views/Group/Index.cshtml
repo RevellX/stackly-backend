@@ -7,9 +7,20 @@
 <h2>Group - @ViewData["Title"]</h2>
 <a href="/group/create"><button>Add new group</button></a>
 <p>Groups list: </p>
-<ul>
-    @foreach (var item in Model.ToArray() ?? Array.Empty<StacklyBackend.Models.Group>())
+<table>
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Actions</th>
+    </tr>
+    @foreach (var group in Model.ToArray() ?? Array.Empty<StacklyBackend.Models.Group>())
     {
-        <li>@item.Id @(item.Name) <a href="/group/delete/@item.Id">Delete</a> <a href="/group/edit/@item.Id">Edit</a></li>
+        <tr>
+            <td>@group.Id</td>
+            <td>@group.Name</td>
+            <td><a href="/group/delete/@group.Id">Delete</a></td>
+            <td><a href="/group/edit/@group.Id">Edit</a></td>
+            <td><a href="/group/details/@group.Id">Details</a></td>
+        </tr>
     }
-</ul>
+</table>

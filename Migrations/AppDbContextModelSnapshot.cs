@@ -165,11 +165,17 @@ namespace stackly.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("GroupId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
 
                     b.ToTable("Categories");
                 });
@@ -364,6 +370,17 @@ namespace stackly.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("StacklyBackend.Models.Category", b =>
+                {
+                    b.HasOne("StacklyBackend.Models.Group", "Group")
+                        .WithMany("Categories")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+                });
+
             modelBuilder.Entity("StacklyBackend.Models.Item", b =>
                 {
                     b.HasOne("StacklyBackend.Models.Category", "Category")
@@ -371,6 +388,11 @@ namespace stackly.Migrations
                         .HasForeignKey("CategoryId");
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("StacklyBackend.Models.Group", b =>
+                {
+                    b.Navigation("Categories");
                 });
 #pragma warning restore 612, 618
         }
