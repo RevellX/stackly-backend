@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StacklyBackend.Models;
 using StacklyBackend.Utils;
@@ -13,10 +14,14 @@ public class CategoryController : Controller
         _context = new AppDbContext();
     }
 
-
+    [Authorize]
     // GET: Category
     public ActionResult Index()
     {
+        // if (User.Identity == null || !User.Identity.IsAuthenticated)
+        // {
+        //     return RedirectToPage("/Account/Login", new { area = "Identity" });
+        // }
         return View(_context.Categories.ToList());
     }
 
@@ -67,6 +72,7 @@ public class CategoryController : Controller
                 return RedirectToAction("Index");
             }
         }
+
         return View(category);
     }
 

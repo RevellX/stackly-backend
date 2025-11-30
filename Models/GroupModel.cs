@@ -1,0 +1,17 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace StacklyBackend.Models;
+
+public class Group
+{
+    [Key]
+    [StringLength(10)]
+    public string Id { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public List<User> Users { get; set; } = [];
+}
+
+public class GroupCreate
+{
+    public string Name { get; set; } = string.Empty;
+}

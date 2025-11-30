@@ -1,0 +1,15 @@
+@model List<StacklyBackend.Models.Group>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h2>Group - @ViewData["Title"]</h2>
+<a href="/group/create"><button>Add new group</button></a>
+<p>Groups list: </p>
+<ul>
+    @foreach (var item in Model.ToArray() ?? Array.Empty<StacklyBackend.Models.Group>())
+    {
+        <li>@item.Id @(item.Name) <a href="/group/delete/@item.Id">Delete</a> <a href="/group/edit/@item.Id">Edit</a></li>
+    }
+</ul>
