@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace stackly.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251109140315_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251129184339_Initial_Create")]
+    partial class Initial_Create
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -18,21 +18,37 @@ namespace stackly.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.10");
 
-            modelBuilder.Entity("stackly.Models.Category", b =>
+            modelBuilder.Entity("GroupUser", b =>
                 {
-                    b.Property<string>("Name")
+                    b.Property<string>("GroupsId")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("DisplayName")
+                    b.Property<string>("UsersId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("GroupsId", "UsersId");
+
+                    b.HasIndex("UsersId");
+
+                    b.ToTable("GroupUser");
+                });
+
+            modelBuilder.Entity("StacklyBackend.Models.Category", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Name");
+                    b.HasKey("Id");
 
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("stackly.Models.Example", b =>
+            modelBuilder.Entity("StacklyBackend.Models.Example", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(10)
@@ -51,17 +67,31 @@ namespace stackly.Migrations
                     b.ToTable("Examples");
                 });
 
-            modelBuilder.Entity("stackly.Models.Item", b =>
+            modelBuilder.Entity("StacklyBackend.Models.Group", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(10)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("CategoryName")
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Groups");
+                });
+
+            modelBuilder.Entity("StacklyBackend.Models.Item", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CategoryId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -73,19 +103,18 @@ namespace stackly.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryName");
+                    b.HasIndex("CategoryId");
 
                     b.ToTable("Items");
                 });
 
-            modelBuilder.Entity("stackly.Models.User", b =>
+            modelBuilder.Entity("StacklyBackend.Models.User", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(10)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("DisplayName")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PasswordHashed")
@@ -101,11 +130,26 @@ namespace stackly.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("stackly.Models.Item", b =>
+            modelBuilder.Entity("GroupUser", b =>
                 {
-                    b.HasOne("stackly.Models.Category", "Category")
+                    b.HasOne("StacklyBackend.Models.Group", null)
                         .WithMany()
-                        .HasForeignKey("CategoryName");
+                        .HasForeignKey("GroupsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StacklyBackend.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UsersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("StacklyBackend.Models.Item", b =>
+                {
+                    b.HasOne("StacklyBackend.Models.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId");
 
                     b.Navigation("Category");
                 });
