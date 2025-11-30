@@ -301,4 +301,6 @@ footer {
     }
 }
 
-
+.text-danger {
+    color: red
+}

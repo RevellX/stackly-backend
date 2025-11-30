@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StacklyBackend.Models;
 using StacklyBackend.Utils;
+using StacklyBackend.Utils.FormFactory;
 
 namespace StacklyBackend.Controllers;
 
@@ -43,9 +44,18 @@ public class ItemController : Controller
         return View(items.ToList());
     }
 
+    // public ActionResult Create()
+    // {
+    //     ViewData["categories"] = _context.Categories.ToList();
+    //     return View();
+    // }
     public ActionResult Create()
     {
-        ViewData["categories"] = _context.Categories.ToList();
+        ViewData["categories"] = _context.Categories
+            .OrderBy(c => c.Name)
+            .ToList()
+            .ToSelectList(c => c.Id, c => c.Name);
+
         return View();
     }
 
@@ -66,7 +76,7 @@ public class ItemController : Controller
                 Name = item.Name,
                 Description = item.Description,
                 Quantity = item.Quantity,
-                CategoryId = null
+                CategoryId = item.CategoryId
 
             });
             _context.SaveChanges();
