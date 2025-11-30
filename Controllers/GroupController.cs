@@ -16,6 +16,8 @@ public class GroupController : Controller
     // GET: Group
     public ActionResult Index()
     {
+        var user = _context.Users.FirstOrDefault();
+        Console.WriteLine(user.UserName);
         return View(_context.Groups.ToList());
     }
 
