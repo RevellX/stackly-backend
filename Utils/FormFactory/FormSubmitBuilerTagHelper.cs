@@ -19,8 +19,8 @@ public class FormSubmitBuilerTagHelper : TagHelper
         var buttonText = child.GetContent().Trim();
         
         var classes = string.IsNullOrWhiteSpace(Klasa)
-            ? "stackly-btn"
-            : $"stackly-btn {Klasa}";
+            ? "stackly-form__submit"
+            : $"stackly-form__submit {Klasa}";
 
         output.Attributes.SetAttribute("class", classes);
         output.Attributes.SetAttribute("type", Type);

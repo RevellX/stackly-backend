@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 namespace StacklyBackend.Utils.FormFactory;
 
@@ -19,8 +18,8 @@ public class FormInputBuilderTagHelper : TagHelper
     {
         output.TagName = "div";
         var wrapperClass = string.IsNullOrWhiteSpace(Klasa)
-            ? "stackly-field"
-            : $"stackly-field {Klasa}";
+            ? "stackly-form__field"
+            : $"stackly-form__field {Klasa}";
         output.Attributes.SetAttribute("class", wrapperClass);
 
         // Get the inner content (label text)
@@ -30,18 +29,18 @@ public class FormInputBuilderTagHelper : TagHelper
         var name = Name;
         var type = Type;
         var id = Id ?? Name;
-        
+        var value = Value;
         var required = Required;
         
-        string labelHtml = Required
-            ? $"<label for=\"{id}\" class=\"stackly-label\">{labelText}<span class=\"text-danger\">*</span></label>"
-            : $"<label for=\"{id}\" class=\"stackly-label\">{labelText}</label>";
+        string labelHtml = required
+            ? $"<label for=\"{id}\" class=\"stackly-form__label\">{labelText}<span class=\"text-danger\">*</span></label>"
+            : $"<label for=\"{id}\" class=\"stackly-form__label\">{labelText}</label>";
         
         
-        string requiredAttr = Required ? "required" : "";
+        string requiredAttr = required ? "required" : "";
         string inputHtml =
             $"<input type=\"{type}\" id=\"{id}\" name=\"{name}\" " +
-            $"class=\"stackly-input\" {requiredAttr} />";
+            $"class=\"stackly-form__input\" {requiredAttr} value=\"{value}\" />";
         
         output.Content.SetHtmlContent(labelHtml + inputHtml);
     }

@@ -82,7 +82,11 @@ public class ItemController : Controller
             _context.SaveChanges();
             return RedirectToAction("Index");
         }
-        ViewData["categories"] = _context.Categories.ToList();
+        ViewData["categories"] = _context.Categories
+            .OrderBy(c => c.Name)
+            .ToList()
+            .ToSelectList(c => c.Id, c => c.Name);
+        
         ViewData["error"] = "There has beed an error while creating new item";
         return View(item);
     }
@@ -104,6 +108,10 @@ public class ItemController : Controller
         if (item is null)
             return NotFound();
 
+        ViewData["categories"] = _context.Categories
+            .OrderBy(c => c.Name)
+            .ToList()
+            .ToSelectList(c => c.Id, c => c.Name);
         return View(item);
     }
 
@@ -124,6 +132,10 @@ public class ItemController : Controller
             return RedirectToAction("Index");
         }
 
+        ViewData["categories"] = _context.Categories
+            .OrderBy(c => c.Name)
+            .ToList()
+            .ToSelectList(c => c.Id, c => c.Name);
         return View(item);
     }
     // GET: Item/Delete/5

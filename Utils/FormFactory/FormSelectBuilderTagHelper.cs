@@ -22,8 +22,8 @@ public class FormSelectBuilderTagHelper : TagHelper
     {
         output.TagName = "div";
         var wrapperClass = string.IsNullOrWhiteSpace(Klasa)
-            ? "stackly-field"
-            : $"stackly-field {Klasa}";
+            ? "stackly-form__field"
+            : $"stackly-form__field {Klasa}";
         output.Attributes.SetAttribute("class", wrapperClass);
 
         var child = await output.GetChildContentAsync();
@@ -32,14 +32,14 @@ public class FormSelectBuilderTagHelper : TagHelper
         var id = Id ?? Name;
 
         string labelHtml = Required
-            ? $"<label for=\"{id}\" class=\"stackly-label\">{labelText} <span class=\"text-danger\">*</span></label>"
-            : $"<label for=\"{id}\" class=\"stackly-label\">{labelText}</label>";
+            ? $"<label for=\"{id}\" class=\"stackly-form__label\">{labelText} <span class=\"text-danger\">*</span></label>"
+            : $"<label for=\"{id}\" class=\"stackly-form__label\">{labelText}</label>";
 
         var items = Items ?? Enumerable.Empty<SelectListItem>();
         var sb = new System.Text.StringBuilder();
         var requiredAttr = Required ? " required" : "";
 
-        sb.Append($"<select id=\"{id}\" name=\"{Name}\" class=\"stackly-select\"{requiredAttr}>");
+        sb.Append($"<select id=\"{id}\" name=\"{Name}\" class=\"stackly-form__select\"{requiredAttr}>");
 
         if (string.IsNullOrEmpty(EmptyOptionText))
         {

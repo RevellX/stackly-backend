@@ -1,0 +1,59 @@
+/* Form styling file */
+/* Credits: Maksiator */
+
+.stackly-form {
+    padding: 1rem;
+    border: 1px solid var(--primary-blue);
+    border-radius: var(--border-radius);
+    width: fit-content;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.stackly-form__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem
+}
+
+.stackly-form__label {
+    
+}
+.stackly-form__label span{
+    margin-left: 0.25rem;
+}
+
+.stackly-form__input {
+    border-top: none;
+    border-right: none;
+    border-left: none;
+    border-bottom: 1px dashed var(--text-gray);
+    background-color: transparent;
+    width: 15rem;
+}
+
+.stackly-form__submit {
+    border: 1px solid var(--primary-blue);
+    border-radius: var(--border-radius);
+    color: var(--primary-blue);
+    background-color: transparent;
+    transition: 0.2s ease all;
+    /*font-size: 1.15rem;*/
+    padding: 0.25rem;
+}
+
+.stackly-form__submit:hover {
+    background-color: var(--primary-blue);
+    color: var(--text-white);
+}
+
+.stackly-form__error {
+    color: var(--error-red);
+    border: 2px solid var(--error-red);
+    border-radius: var(--border-radius);
+    width: fit-content;
+    padding: 0.25rem;
+    margin-bottom: 1rem;
+    font-weight: bold;
+    /*font-size: 0.85rem;*/
+}
