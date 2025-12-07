@@ -1,29 +1,39 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using StacklyBackend.Models;
 using StacklyBackend.Utils;
 
 namespace StacklyBackend.Controllers;
 
+[Authorize]
 public class GroupController : Controller
 {
-    private static AppDbContext _context = new AppDbContext();
+    private AppDbContext _context = null!;
+    private UserManager<User> _userManager = null!;
 
-    public GroupController()
+    public GroupController(UserManager<User> userManager, AppDbContext dbContext)
     {
-        _context = new AppDbContext();
+        _context = dbContext;
+        _userManager = userManager;
     }
 
     // GET: Group
     public ActionResult Index()
     {
-        var user = _context.Users.FirstOrDefault();
-        return View(_context.Groups.ToList());
+        var userId = _userManager.GetUserId(User);
+        return View(_context.Groups
+            .Include(g => g.Users)
+            .Where(g => g.OwnerId == userId || g.Users.Any(u => u.Id == userId))
+            .ToList());
     }
 
     // GET: Groups/Details/5
     public ActionResult Details(string id)
     {
-        var groups = _context.Groups.Find(id);
+        var groups = _context.Groups.Include(g => g.Users).FirstOrDefault(g => g.Id == id);
         if (groups is null)
             return NotFound();
 
@@ -52,19 +62,20 @@ public class GroupController : Controller
             _context.Groups.Add(new Group
             {
                 Id = id,
-                Name = group.Name
+                Name = group.Name,
+                OwnerId = _userManager.GetUserId(User)!
             });
             _context.SaveChanges();
             return RedirectToAction("Index");
         }
-        ViewData["error"] = "There has beed an error while creating new group";
+        ViewData["error"] = "There has been an error while creating new group";
         return View(group);
     }
 
     // GET: Group/Edit/5
     public ActionResult Edit(string id)
     {
-        var group = _context.Groups.Find(id);
+        var group = _context.Groups.Include(g => g.Users).FirstOrDefault(g => g.Id == id);
         if (group is null)
             return NotFound();
 
@@ -74,19 +85,41 @@ public class GroupController : Controller
     // POST: Group/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public ActionResult Edit(string id, [Bind(include: "Name")] Group group)
+    public ActionResult Edit(string id, [Bind(include: "Name,AddUserEmail,RemoveUserEmail")] GroupEdit groupEdit)
     {
+        var dbGroup = _context.Groups.Include(g => g.Users).FirstOrDefault(g => g.Id == id);
         if (ModelState.IsValid)
         {
-            var dbGroup = _context.Groups.Find(id);
             if (dbGroup is null)
                 return NotFound();
-            dbGroup.Name = group.Name;
+
+            // Add user by email
+            if (!string.IsNullOrEmpty(groupEdit.AddUserEmail))
+            {
+                var dbUser = _context.Users.FirstOrDefault(u => u.Email == groupEdit.AddUserEmail);
+                if (dbUser != null && dbGroup.Users.All(u => u.Id != dbUser.Id))
+                {
+                    dbGroup.Users.Add(dbUser);
+                }
+            }
+            else
+            // Remove user by email
+            if (!string.IsNullOrEmpty(groupEdit.RemoveUserEmail))
+            {
+                var removeUser = dbGroup.Users.FirstOrDefault(u => u.Email == groupEdit.RemoveUserEmail);
+                if (removeUser != null)
+                {
+                    dbGroup.Users.Remove(removeUser);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(groupEdit.Name))
+                dbGroup.Name = groupEdit.Name;
             _context.SaveChanges();
             return RedirectToAction("Index");
         }
 
-        return View(group);
+        return View(dbGroup);
     }
 
     // GET: Group/Delete/5

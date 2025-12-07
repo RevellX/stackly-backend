@@ -165,11 +165,17 @@ namespace stackly.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("GroupId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
 
                     b.ToTable("Categories");
                 });
@@ -203,7 +209,13 @@ namespace stackly.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("OwnerId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
 
                     b.ToTable("Groups");
                 });
@@ -364,6 +376,28 @@ namespace stackly.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("StacklyBackend.Models.Category", b =>
+                {
+                    b.HasOne("StacklyBackend.Models.Group", "Group")
+                        .WithMany("Categories")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("StacklyBackend.Models.Group", b =>
+                {
+                    b.HasOne("StacklyBackend.Models.User", "Owner")
+                        .WithMany("OwnedGroups")
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+                });
+
             modelBuilder.Entity("StacklyBackend.Models.Item", b =>
                 {
                     b.HasOne("StacklyBackend.Models.Category", "Category")
@@ -371,6 +405,16 @@ namespace stackly.Migrations
                         .HasForeignKey("CategoryId");
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("StacklyBackend.Models.Group", b =>
+                {
+                    b.Navigation("Categories");
+                });
+
+            modelBuilder.Entity("StacklyBackend.Models.User", b =>
+                {
+                    b.Navigation("OwnedGroups");
                 });
 #pragma warning restore 612, 618
         }

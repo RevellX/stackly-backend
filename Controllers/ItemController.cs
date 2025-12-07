@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StacklyBackend.Models;
@@ -5,20 +6,21 @@ using StacklyBackend.Utils;
 
 namespace StacklyBackend.Controllers;
 
+[Authorize]
 public class ItemController : Controller
 {
-    private static AppDbContext _context = new AppDbContext();
+    private AppDbContext _context = null!;
 
-    public ItemController()
+    public ItemController(AppDbContext dbContext)
     {
-        _context = new AppDbContext();
+        _context = dbContext;
     }
 
     // GET: Item
     // Accept optional route/query parameters (bound from route or query string)
     public ActionResult Index([FromQuery] ItemQuery query)
     {
-        var items = _context.Items.AsQueryable();
+        var items = _context.Items.Include(i => i.Category).AsQueryable();
 
         string? search = string.IsNullOrWhiteSpace(query.Search) ? null : $"%{query.Search}%";
 
@@ -39,19 +41,11 @@ public class ItemController : Controller
             items = items.Where(i =>
                 i.Quantity <= query.MaxQuantity.Value
             );
-        if (User.Identity == null || !User.Identity.IsAuthenticated)
-        {
-            return RedirectToPage("/Account/Login", new { area = "Identity" });
-        }
         return View(items.ToList());
     }
 
     public ActionResult Create()
     {
-        if (User.Identity == null || !User.Identity.IsAuthenticated)
-        {
-            return RedirectToPage("/Account/Login", new { area = "Identity" });
-        }
         ViewData["categories"] = _context.Categories.ToList();
         return View();
     }
@@ -82,7 +76,7 @@ public class ItemController : Controller
             return RedirectToAction("Index");
         }
         ViewData["categories"] = _context.Categories.ToList();
-        ViewData["error"] = "There has beed an error while creating new item";
+        ViewData["error"] = "There has been an error while creating new item";
         return View(item);
     }
 

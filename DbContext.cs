@@ -30,5 +30,11 @@ public class AppDbContext : IdentityDbContext<User>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Group>()
+         .HasOne(g => g.Owner)                // Group has one Owner
+         .WithMany(u => u.OwnedGroups)        // User owns many Groups
+         .HasForeignKey(g => g.OwnerId)       // FK property
+         .OnDelete(DeleteBehavior.Restrict);  // Prevent cascade delete
     }
 }
