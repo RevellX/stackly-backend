@@ -9,11 +9,11 @@ namespace StacklyBackend.Controllers;
 [Authorize]
 public class CategoryController : Controller
 {
-    private static AppDbContext _context = new AppDbContext();
+    private AppDbContext _context = null!;
 
-    public CategoryController()
+    public CategoryController(AppDbContext dbContext)
     {
-        _context = new AppDbContext();
+        _context = dbContext;
     }
 
     [Authorize]

@@ -9,11 +9,11 @@ namespace StacklyBackend.Controllers;
 [Authorize]
 public class ItemController : Controller
 {
-    private static AppDbContext _context = new AppDbContext();
+    private AppDbContext _context = null!;
 
-    public ItemController()
+    public ItemController(AppDbContext dbContext)
     {
-        _context = new AppDbContext();
+        _context = dbContext;
     }
 
     // GET: Item
