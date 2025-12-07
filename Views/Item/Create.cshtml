@@ -1,43 +1,80 @@
 @model StacklyBackend.Models.ItemCreate
 @using Microsoft.CodeAnalysis.Differencing
 @{
-    var error = ViewData["Error"] as string;
+    // var error = ViewData["Error"] as string;
     ViewData["Title"] = "Create";
 }
-<h2>Item - @ViewData["Title"]</h2>
-<a href="/item"><button type="button" aria-label="Go back">Go to list</button></a>
-<p>Item form: </p>
-
-@if (!string.IsNullOrEmpty(error))
-{
-    <div role="alert" class="validation-summary-errors">
-        @error
-    </div>
+@section Styles {
+    <link rel="stylesheet" href="~/css/forms.css" />
 }
 
-<form action="/item/create" method="post">
-    @Html.AntiForgeryToken()
-    <div>
-        <label for="Name">Name</label>
-        <input type="text" id="Name" name="Name" value="@Model?.Name"/>
-    </div>
-    <div>
-        <label for="Description">Description</label>
-        <input type="text" id="Description" name="Description" value="@Model?.Description"/>
-    </div>
-    <div>
-        <label for="Quantity">Quantity</label>
-        <input type="text" id="Quantity" name="Quantity" value="@Model?.Quantity"/>
-    </div>
-    <div>
-        <label for="CategoryId">Category</label>
-        <select name="CategoryId" id="CategoryId">
-        <option disabled selected>-- Wybierz kategorię --</option>
-            @foreach (var cat in (ViewData["categories"] as IEnumerable<StacklyBackend.Models.Category>) ?? Array.Empty<StacklyBackend.Models.Category>())
-            {
-                <option selected='@(Model?.CategoryId == cat.Id ? "selected" : null)' value="@cat.Id">@cat.Name</option>
-            }
-        </select>
-    </div>
-    <button type="submit">Create</button>
-</form>
+<div class="entry-section">
+    <a href="/item">
+        <button type="button" aria-label="Go back">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+    </a>
+    <h2>Item - @ViewData["Title"]</h2>
+</div>
+
+<div class="info-section">
+    <p>Please fill form to create your desired item!</p>
+</div>
+
+@* @if (!string.IsNullOrEmpty(error)) *@
+@* { *@
+@*     <div role="alert" class="validation-summary-errors"> *@
+@*         @error *@
+@*     </div> *@
+@* } *@
+
+@* <form action="/item/create" method="post"> *@
+    @* @Html.AntiForgeryToken() *@
+    @* <div> *@
+    @*     <label for="Name">Name</label> *@
+    @*     <input type="text" id="Name" name="Name" value="@Model?.Name"/> *@
+    @* </div> *@
+    @* <div> *@
+    @*     <label for="Description">Description</label> *@
+    @*     <input type="text" id="Description" name="Description" value="@Model?.Description"/> *@
+    @* </div> *@
+    @* <div> *@
+    @*     <label for="Quantity">Quantity</label> *@
+    @*     <input type="text" id="Quantity" name="Quantity" value="@Model?.Quantity"/> *@
+    @* </div> *@
+    @* <div> *@
+    @*     <label for="CategoryId">Category</label> *@
+    @*     <select name="CategoryId" id="CategoryId" value="@Model?.CategoryId"> *@
+    @*     <option value="">Brak kategorii</option> *@
+    @*         @foreach (var cat in (ViewData["categories"] as IEnumerable<StacklyBackend.Models.Category>) ?? Array.Empty<StacklyBackend.Models.Category>()) *@
+    @*         { *@
+    @*             <option value="@cat.Id">@cat.Name</option> *@
+    @*         } *@
+    @*     </select> *@
+    @* </div> *@
+    @* <button type="submit">Create</button> *@
+    
+@* </form> *@
+    
+    
+<form-builder action="/item/create" method="post">
+    <form-input-builder type="text" name="Name" required="true" value="@Model?.Name">
+        Product Name
+    </form-input-builder>
+    <form-input-builder type="text" name="Description" value="@Model?.Description">
+        Description
+    </form-input-builder>
+    <form-input-builder type="text" name="Quantity" required="true" value="@Model?.Quantity">
+        Quantity
+    </form-input-builder>
+    <form-select-builder
+        name="CategoryId"
+        items="@(ViewData["categories"] as IEnumerable<SelectListItem>)"
+        selected-value="@(Model?.CategoryId)"
+        empty-option-text="Brak kategorii"
+        required
+        klasa="">
+        Category
+    </form-select-builder>
+    <form-submit-builder>Add</form-submit-builder>
+</form-builder>

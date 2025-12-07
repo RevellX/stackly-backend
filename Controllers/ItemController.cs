@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StacklyBackend.Models;
 using StacklyBackend.Utils;
+using StacklyBackend.Utils.FormFactory;
 
 namespace StacklyBackend.Controllers;
 
@@ -20,8 +21,8 @@ public class ItemController : Controller
     // Accept optional route/query parameters (bound from route or query string)
     public ActionResult Index([FromQuery] ItemQuery query)
     {
+        // var items = _context.Items.AsQueryable();
         var items = _context.Items.Include(i => i.Category).AsQueryable();
-
         string? search = string.IsNullOrWhiteSpace(query.Search) ? null : $"%{query.Search}%";
 
         if (!string.IsNullOrEmpty(search))
@@ -46,7 +47,11 @@ public class ItemController : Controller
 
     public ActionResult Create()
     {
-        ViewData["categories"] = _context.Categories.ToList();
+        ViewData["categories"] = _context.Categories
+            .OrderBy(c => c.Name)
+            .ToList()
+            .ToSelectList(c => c.Id, c => c.Name);
+
         return View();
     }
 
@@ -71,11 +76,16 @@ public class ItemController : Controller
                 Description = item.Description,
                 Quantity = item.Quantity,
                 CategoryId = item.CategoryId
+
             });
             _context.SaveChanges();
             return RedirectToAction("Index");
         }
-        ViewData["categories"] = _context.Categories.ToList();
+        ViewData["categories"] = _context.Categories
+            .OrderBy(c => c.Name)
+            .ToList()
+            .ToSelectList(c => c.Id, c => c.Name);
+        
         ViewData["error"] = "There has been an error while creating new item";
         return View(item);
     }
@@ -96,7 +106,11 @@ public class ItemController : Controller
         var item = _context.Items.Include(i => i.Category).FirstOrDefault(i => i.Id == id);
         if (item is null)
             return NotFound();
-        ViewData["categories"] = _context.Categories.ToList();
+
+        ViewData["categories"] = _context.Categories
+            .OrderBy(c => c.Name)
+            .ToList()
+            .ToSelectList(c => c.Id, c => c.Name);
         return View(item);
     }
 
@@ -121,7 +135,11 @@ public class ItemController : Controller
             _context.SaveChanges();
             return RedirectToAction("Index");
         }
-        ViewData["categories"] = _context.Categories.ToList();
+
+        ViewData["categories"] = _context.Categories
+            .OrderBy(c => c.Name)
+            .ToList()
+            .ToSelectList(c => c.Id, c => c.Name);
         return View(item);
     }
     // GET: Item/Delete/5
