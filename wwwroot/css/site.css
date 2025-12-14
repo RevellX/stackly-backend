@@ -340,7 +340,7 @@ footer {
         right: 10px;
         background: none;
         color: var(--text-gray);
-        font-size: 24px;
+        font-size: 30px;
         padding: 20px;
         z-index: 100;
     }
