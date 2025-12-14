@@ -320,6 +320,9 @@ footer {
 
 @media (max-width: 576px) {
 
+    .mobile-account-content {
+        width: 95%;
+    }
 }
 
 @media (max-width: 768px) {
@@ -426,18 +429,18 @@ footer {
     .mobile-account-header {
         display: flex;
         justify-content: flex-end;
-        padding: 20px;
+
     }
-    
-    
 
     .close-btn {
+        margin-top: 20px;
+        margin-right: 25px;
         background: none;
         border: none;
         font-size: 30px;
         color: var(--text-dark);
         cursor: pointer;
-        padding: 5px;
+        padding: 20px;
     }
 
     .mobile-account-content {
