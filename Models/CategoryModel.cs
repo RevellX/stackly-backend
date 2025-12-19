@@ -10,10 +10,42 @@ public class Category
     public string Name { get; set; } = string.Empty;
     public string GroupId { get; set; } = string.Empty;
     public Group Group { get; set; } = null!;
+
+    public static Category? GetCategoryById(AppDbContext _context, string categoryId, string userId)
+    {
+        return _context.Categories.FirstOrDefault(c =>
+            c.Id == categoryId &&
+            (c.Group.OwnerId == userId || c.Group.Users.Any(u => u.Id == userId)));
+    }
+
+    public static List<Category> GetCategoriesByGroupId(AppDbContext _context, string groupId, string userId)
+    {
+        return _context.Categories.Where(c =>
+            c.GroupId == groupId &&
+                (c.Group.OwnerId == userId ||
+                c.Group.Users.Any(u => u.Id == userId))
+            ).ToList();
+    }
+
+    public static bool IsCategoryInGroup(AppDbContext _context, string groupId, string name)
+    {
+        return _context.Categories.Any(c => c.Name == name && c.GroupId == groupId);
+    }
+
+    public static bool CategoryExistsById(AppDbContext _context, string categoryId)
+    {
+        return _context.Categories.Any(c => c.Id == categoryId);
+    }
 }
 
 public class CategoryCreate
 {
     public string Name { get; set; } = string.Empty;
     public string GroupId { get; set; } = string.Empty;
+}
+
+public class CategoryEdit
+{
+    public string? Name { get; set; } = string.Empty;
+    public string? GroupId { get; set; } = string.Empty;
 }

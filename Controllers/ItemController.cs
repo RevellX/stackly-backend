@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StacklyBackend.Models;
@@ -10,17 +11,21 @@ namespace StacklyBackend.Controllers;
 public class ItemController : Controller
 {
     private AppDbContext _context = null!;
+    private UserManager<User> _userManager = null!;
 
-    public ItemController(AppDbContext dbContext)
+    public ItemController(UserManager<User> userManager, AppDbContext dbContext)
     {
         _context = dbContext;
+        _userManager = userManager;
     }
 
     // GET: Item
     // Accept optional route/query parameters (bound from route or query string)
     public ActionResult Index([FromQuery] ItemQuery query)
     {
-        var items = _context.Items.Include(i => i.Category).AsQueryable();
+        var selectedGroupId = HttpContext.Session.GetString("SelectedGroupId") ?? "";
+        var items = _context.Items.Include(i => i.Category).Where(i => i.Category.GroupId == selectedGroupId).AsQueryable();
+        var userId = _userManager.GetUserId(User);
 
         string? search = string.IsNullOrWhiteSpace(query.Search) ? null : $"%{query.Search}%";
 
@@ -29,7 +34,12 @@ public class ItemController : Controller
                 EF.Functions.Like(i.Id, search)
                 || EF.Functions.Like(i.Name, search)
                 || (i.Description != null && EF.Functions.Like(i.Description, search))
-                || (i.CategoryId != null && EF.Functions.Like(i.Category!.Name, search))
+            // || EF.Functions.Like(i.Category!.Name, search)
+            );
+
+        if (!string.IsNullOrEmpty(query.Category))
+            items = items.Where(i =>
+            EF.Functions.Like(i.Category.Name, query.Category)
             );
 
         if (query.MinQuantity.HasValue)
@@ -41,18 +51,32 @@ public class ItemController : Controller
             items = items.Where(i =>
                 i.Quantity <= query.MaxQuantity.Value
             );
+        ViewData["search"] = query.Search;
+        ViewData["category"] = query.Category;
+        ViewData["categories"] = Category.GetCategoriesByGroupId(_context, selectedGroupId, userId!);
         return View(items.ToList());
     }
 
     public ActionResult Create()
     {
-        ViewData["categories"] = _context.Categories.ToList();
+        var selectedGroupId = HttpContext.Session.GetString("SelectedGroupId") ?? "";
+        var userId = _userManager.GetUserId(User);
+        ViewData["categories"] = Category.GetCategoriesByGroupId(_context, selectedGroupId, userId!);
         return View();
     }
 
     [HttpPost]
     public ActionResult Create([Bind(include: "Name,Description,Quantity,CategoryId")] ItemCreate item)
     {
+        var selectedGroupId = HttpContext.Session.GetString("SelectedGroupId") ?? "";
+        var userId = _userManager.GetUserId(User);
+        var dbCategory = Category.GetCategoryById(_context, item.CategoryId, userId!);
+        if (dbCategory is null)
+            return NotFound();
+        if (!Group.IsUserGroupMember(_context, dbCategory.GroupId, userId!))
+        {
+            return Forbid();
+        }
         if (ModelState.IsValid)
         {
             string id;
@@ -60,9 +84,6 @@ public class ItemController : Controller
             {
                 id = Generator.GetRandomString(StringType.Alphanumeric, StringCase.Lowercase, 10);
             } while (_context.Items.FirstOrDefault(p => p.Id.Equals(id)) is not null);
-
-            if (!_context.Categories.Any(c => c.Id == item.CategoryId))
-                return NotFound();
 
             _context.Items.Add(new Item
             {

@@ -25,7 +25,6 @@
             <div>
         <label for="GroupId">Group</label>
         <select name="GroupId" id="GroupId">
-        <option value="">Brak grupy</option>
             @foreach (var grp in (ViewData["groups"] as IEnumerable<StacklyBackend.Models.Group>) ?? Array.Empty<StacklyBackend.Models.Group>())
             {
                 <option value='@grp.Id' selected='@(Model?.GroupId == grp.Id ? "selected" : null)'>@grp.Name</option>
