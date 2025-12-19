@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using StacklyBackend.Models;
 using StacklyBackend.Utils;
 
@@ -24,16 +23,14 @@ public class GroupController : Controller
     public ActionResult Index()
     {
         var userId = _userManager.GetUserId(User);
-        return View(_context.Groups
-            .Include(g => g.Users)
-            .Where(g => g.OwnerId == userId || g.Users.Any(u => u.Id == userId))
-            .ToList());
+        return View(Group.GetGroupsForUser(_context, userId!));
     }
 
     // GET: Groups/Details/5
     public ActionResult Details(string id)
     {
-        var groups = _context.Groups.Include(g => g.Users).FirstOrDefault(g => g.Id == id);
+        var userId = _userManager.GetUserId(User);
+        var groups = Group.GetGroupById(_context, id, userId!);
         if (groups is null)
             return NotFound();
 
@@ -57,7 +54,7 @@ public class GroupController : Controller
             do
             {
                 id = Generator.GetRandomString(StringType.Alphanumeric, StringCase.Lowercase, 10);
-            } while (_context.Groups.FirstOrDefault(p => p.Id.Equals(id)) is not null);
+            } while (Group.GroupExistsById(_context, id));
 
             _context.Groups.Add(new Group
             {
@@ -75,7 +72,8 @@ public class GroupController : Controller
     // GET: Group/Edit/5
     public ActionResult Edit(string id)
     {
-        var group = _context.Groups.Include(g => g.Users).FirstOrDefault(g => g.Id == id);
+        var userId = _userManager.GetUserId(User);
+        var group = Group.GetGroupById(_context, id, userId!);
         if (group is null)
             return NotFound();
 
@@ -87,7 +85,8 @@ public class GroupController : Controller
     [ValidateAntiForgeryToken]
     public ActionResult Edit(string id, [Bind(include: "Name,AddUserEmail,RemoveUserEmail")] GroupEdit groupEdit)
     {
-        var dbGroup = _context.Groups.Include(g => g.Users).FirstOrDefault(g => g.Id == id);
+        var userId = _userManager.GetUserId(User);
+        var dbGroup = Group.GetGroupById(_context, id, userId!);
         if (ModelState.IsValid)
         {
             if (dbGroup is null)
@@ -147,6 +146,65 @@ public class GroupController : Controller
         _context.SaveChanges();
         return RedirectToAction("Index");
     }
+
+    // POST: Group/SetGroup
+    [HttpPost]
+    public IActionResult SetGroup(string selectedGroupId)
+    {
+        HttpContext.Session.SetString("SelectedGroupId", selectedGroupId);
+        return Redirect(Request.Headers["Referer"].ToString());
+    }
+
+    // POST: Group/AddUser
+    [HttpPost]
+    public IActionResult AddUser([Bind(include: "GroupId,AddUserEmail")] GroupEdit groupEdit)
+    {
+        if (ModelState.IsValid)
+        {
+            var userId = _userManager.GetUserId(User);
+            if (!Group.IsUserGroupMember(_context, groupEdit.GroupId!, userId!))
+            {
+                return Forbid();
+            }
+            var dbGroup = Group.GetGroupById(_context, groupEdit.GroupId ?? "", userId!);
+            if (dbGroup is not null)
+            {
+                var dbUser = _context.Users.FirstOrDefault(u => u.Email == groupEdit.AddUserEmail);
+                if (dbUser != null && dbGroup.Users.All(u => u.Id != dbUser.Id))
+                {
+                    dbGroup.Users.Add(dbUser);
+                    _context.SaveChanges();
+                }
+            }
+        }
+        return Redirect(Request.Headers["Referer"].ToString());
+    }
+
+    // POST: Group/RemoveGroup
+    [HttpPost]
+    public IActionResult RemoveUser([Bind(include: "GroupId,RemoveUserEmail")] GroupEdit groupEdit)
+    {
+        if (ModelState.IsValid)
+        {
+            var userId = _userManager.GetUserId(User);
+            if (!Group.IsUserGroupMember(_context, groupEdit.GroupId!, userId!))
+            {
+                return Forbid();
+            }
+            var dbGroup = Group.GetGroupById(_context, groupEdit.GroupId ?? "", userId!);
+            if (dbGroup is not null)
+            {
+                var removeUser = dbGroup.Users.FirstOrDefault(u => u.Email == groupEdit.RemoveUserEmail);
+                if (removeUser != null)
+                {
+                    dbGroup.Users.Remove(removeUser);
+                    _context.SaveChanges();
+                }
+            }
+        }
+        return Redirect(Request.Headers["Referer"].ToString());
+    }
+
 
     protected override void Dispose(bool disposing)
     {

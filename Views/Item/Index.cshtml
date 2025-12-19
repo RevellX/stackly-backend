@@ -12,10 +12,28 @@
         <th>Id</th>
         <th>Name</th>
         <th>Description</th>
+        <th>Category</th>
         <th>Quantity</th>
         <th>CategoryId</th>
-        <th>Category</th>
         <th>Actions</th>
+    </tr><tr>
+        <td colspan="4">
+            <form>
+                <input type="text" id="seachField" name="search" placeholder="Wyszukaj przedmiot..." value="@ViewData["search"]" onchange="this.form.submit()" />
+                <select name="category" onchange="this.form.submit()">
+                    <option value="">Dowolne</option>
+                    @foreach (var cat in (ViewData["categories"] as IEnumerable<StacklyBackend.Models.Category>) ?? Array.Empty<StacklyBackend.Models.Category>())
+                    {
+                    <option 
+                        value="@cat.Name"
+                        selected="@(ViewData["category"] as string == cat.Name)"
+                    >
+                            @cat.Name
+                    </option>
+                    }
+                </select>
+            </form>
+        </td>
     </tr>
     @foreach (var item in Model.ToArray() ?? Array.Empty<StacklyBackend.Models.Item>())
     {
@@ -23,12 +41,14 @@
             <td>@item.Id</td>
             <td>@item.Name</td>
             <td>@item.Description</td>
+            <td>@item.Category?.Name</td>
             <td>@item.Quantity</td>
             <td>@item.CategoryId</td>
-            <td>@item.Category?.Name</td>
-            <td><a href="/item/delete/@item.Id">Delete</a></td>
-            <td><a href="/item/edit/@item.Id">Edit</a></td>
-            <td><a href="/item/details/@item.Id">Details</a></td>
+            <td colspan="3" class="actions">
+                <a href="/item/delete/@item.Id">Delete</a>
+                <a href="/item/edit/@item.Id">Edit</a>
+                <a href="/item/details/@item.Id">Details</a>
+            </td>
         </tr>
     }
 </table>
