@@ -1,0 +1,14 @@
+@model GroupDropdownModel
+
+<form asp-controller="Group" asp-action="SetGroup" method="post">
+    <select name="selectedGroupId" onchange="this.form.submit()">
+        <option disabled selected>-- Wybierz grupę --</option>            
+        @foreach (var group in Model.Groups)
+        {
+            <option value="@group.Value"
+                    selected="@(Model.SelectedId == group.Value)">
+                @group.Text
+            </option>
+        }
+    </select>
+</form>

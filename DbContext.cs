@@ -6,6 +6,7 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<Example> Examples { get; set; }
     public DbSet<User> AppUsers { get; set; }
     public DbSet<Item> Items { get; set; }
+    public DbSet<ItemFile> ItemFiles { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Group> Groups { get; set; }
 
@@ -25,7 +26,7 @@ public class AppDbContext : IdentityDbContext<User>
     // The following configures EF to create a Sqlite database file in the
     // special "local" folder for your platform.
     protected override void OnConfiguring(DbContextOptionsBuilder options)
-        => options.UseSqlite($"Data Source={DbPath}").LogTo(Console.WriteLine, LogLevel.Information);
+        => options.UseSqlite($"Data Source={DbPath}");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

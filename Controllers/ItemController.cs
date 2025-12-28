@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StacklyBackend.Models;
@@ -11,18 +12,22 @@ namespace StacklyBackend.Controllers;
 public class ItemController : Controller
 {
     private AppDbContext _context = null!;
+    private UserManager<User> _userManager = null!;
 
-    public ItemController(AppDbContext dbContext)
+    public ItemController(UserManager<User> userManager, AppDbContext dbContext)
     {
         _context = dbContext;
+        _userManager = userManager;
     }
 
     // GET: Item
     // Accept optional route/query parameters (bound from route or query string)
     public ActionResult Index([FromQuery] ItemQuery query)
     {
-        // var items = _context.Items.AsQueryable();
-        var items = _context.Items.Include(i => i.Category).AsQueryable();
+        var selectedGroupId = HttpContext.Session.GetString("SelectedGroupId") ?? "";
+        var userId = _userManager.GetUserId(User);
+        var items = Item.GetItemsByGroupId(_context, selectedGroupId, userId!).AsQueryable();
+
         string? search = string.IsNullOrWhiteSpace(query.Search) ? null : $"%{query.Search}%";
 
         if (!string.IsNullOrEmpty(search))
@@ -30,7 +35,12 @@ public class ItemController : Controller
                 EF.Functions.Like(i.Id, search)
                 || EF.Functions.Like(i.Name, search)
                 || (i.Description != null && EF.Functions.Like(i.Description, search))
-                || (i.CategoryId != null && EF.Functions.Like(i.Category!.Name, search))
+            // || EF.Functions.Like(i.Category!.Name, search)
+            );
+
+        if (!string.IsNullOrEmpty(query.Category))
+            items = items.Where(i =>
+            EF.Functions.Like(i.Category.Name, query.Category)
             );
 
         if (query.MinQuantity.HasValue)
@@ -42,22 +52,32 @@ public class ItemController : Controller
             items = items.Where(i =>
                 i.Quantity <= query.MaxQuantity.Value
             );
+        ViewData["search"] = query.Search;
+        ViewData["category"] = query.Category;
+        ViewData["categories"] = Category.GetCategoriesByGroupId(_context, selectedGroupId, userId!);
         return View(items.ToList());
     }
 
     public ActionResult Create()
     {
-        ViewData["categories"] = _context.Categories
-            .OrderBy(c => c.Name)
-            .ToList()
-            .ToSelectList(c => c.Id, c => c.Name);
-
+        var selectedGroupId = HttpContext.Session.GetString("SelectedGroupId") ?? "";
+        var userId = _userManager.GetUserId(User);
+        ViewData["categories"] = Category.GetCategoriesByGroupId(_context, selectedGroupId, userId!);
         return View();
     }
 
     [HttpPost]
     public ActionResult Create([Bind(include: "Name,Description,Quantity,CategoryId")] ItemCreate item)
     {
+        var selectedGroupId = HttpContext.Session.GetString("SelectedGroupId") ?? "";
+        var userId = _userManager.GetUserId(User);
+        var dbCategory = Category.GetCategoryById(_context, item.CategoryId, userId!);
+        if (dbCategory is null)
+            return NotFound();
+        if (!Group.IsUserGroupMember(_context, dbCategory.GroupId, userId!))
+        {
+            return Forbid();
+        }
         if (ModelState.IsValid)
         {
             string id;
@@ -93,7 +113,8 @@ public class ItemController : Controller
     // GET: Item/Details/5
     public ActionResult Details(string id)
     {
-        var item = _context.Items.Include(i => i.Category).FirstOrDefault(i => i.Id == id);
+        var userId = _userManager.GetUserId(User);
+        var item = Item.GetItemById(_context, id, userId!);
         if (item is null)
             return NotFound();
 
@@ -103,7 +124,8 @@ public class ItemController : Controller
     // GET: Item/Edit/5
     public ActionResult Edit(string id)
     {
-        var item = _context.Items.Include(i => i.Category).FirstOrDefault(i => i.Id == id);
+        var userId = _userManager.GetUserId(User);
+        var item = Item.GetItemById(_context, id, userId!);
         if (item is null)
             return NotFound();
 
@@ -117,21 +139,29 @@ public class ItemController : Controller
     // POST: Item/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public ActionResult Edit(string id, [Bind(include: "Name,Description,Quantity,CategoryId")] Item item)
+    public ActionResult Edit(string id, [Bind(include: "Name,Description,Quantity,CategoryId")] ItemEdit item)
     {
         if (ModelState.IsValid)
         {
-            var dbitem = _context.Items.Include(i => i.Category).FirstOrDefault(i => i.Id == id);
+
+            var userId = _userManager.GetUserId(User);
+            var dbitem = Item.GetItemById(_context, id, userId!);
             if (dbitem is null)
                 return NotFound();
 
-            if (!_context.Categories.Any(c => c.Id == item.CategoryId))
-                return NotFound();
 
-            dbitem.Name = item.Name;
-            dbitem.Description = item.Description;
-            dbitem.Quantity = item.Quantity;
-            dbitem.CategoryId = item.CategoryId;
+            if (!string.IsNullOrEmpty(item.Name))
+                dbitem.Name = item.Name;
+            if (!string.IsNullOrEmpty(item.Description))
+                dbitem.Description = item.Description;
+            if (item.Quantity.HasValue)
+                dbitem.Quantity = (int)item.Quantity;
+            if (!string.IsNullOrEmpty(item.CategoryId))
+            {
+                if (!Category.UserCanAccessCategory(_context, item.CategoryId, userId!))
+                    return NotFound();
+                dbitem.CategoryId = item.CategoryId;
+            }
             _context.SaveChanges();
             return RedirectToAction("Index");
         }
@@ -148,7 +178,8 @@ public class ItemController : Controller
         if (id is null)
             return BadRequest();
 
-        var item = _context.Items.Find(id);
+        var userId = _userManager.GetUserId(User);
+        var item = Item.GetItemById(_context, id, userId!);
         if (item == null)
             return NotFound();
 
@@ -160,12 +191,131 @@ public class ItemController : Controller
     [ValidateAntiForgeryToken]
     public ActionResult DeleteConfirmed(string id)
     {
-        var item = _context.Items.Find(id);
+        var userId = _userManager.GetUserId(User);
+        var item = Item.GetItemById(_context, id, userId!);
         if (item is null)
             return NotFound();
         _context.Items.Remove(item);
         _context.SaveChanges();
         return RedirectToAction("Index");
+    }
+    [HttpPost]
+    [Authorize]
+    public async Task<IActionResult> Upload(string itemId, IFormFile file)
+    {
+        var userId = _userManager.GetUserId(User);
+        var dbitem = Item.GetItemById(_context, itemId, userId!);
+        if (dbitem is null)
+            return NotFound();
+        if (file == null || file.Length == 0)
+            return BadRequest("File missing");
+
+        const long MaxFileSize = 10 * 1024 * 1024; // 10 MB
+        if (file.Length > MaxFileSize)
+        {
+            return BadRequest("File too large. Maximum allowed size is 10 MB.");
+        }
+
+        var uploadsPath = Path.Combine(
+            AppContext.BaseDirectory,
+            "Uploads",
+            "items",
+            itemId.ToString()
+        );
+
+        Directory.CreateDirectory(uploadsPath);
+
+        string newId;
+        do
+        {
+            newId = Generator.GetRandomString(StringType.Alphanumeric, StringCase.Lowercase, 10);
+        } while (_context.Items.FirstOrDefault(p => p.Id.Equals(newId)) is not null);
+
+        var storedFileName = $"{newId}{Path.GetExtension(file.FileName)}";
+        var filePath = Path.Combine(uploadsPath, storedFileName);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        var dbFile = new ItemFile
+        {
+            Id = newId,
+            ItemId = itemId,
+            OriginalFileName = file.FileName,
+            StoredFileName = storedFileName,
+            ContentType = file.ContentType
+        };
+
+        _context.ItemFiles.Add(dbFile);
+        await _context.SaveChangesAsync();
+
+        return Redirect(Request.Headers.Referer.ToString());
+    }
+
+    [Authorize]
+    public async Task<IActionResult> Preview(string fileId)
+    {
+        var userId = _userManager.GetUserId(User);
+        var file = ItemFile.GetFileById(_context, fileId, userId!);
+
+        if (file == null)
+            return NotFound();
+
+        if (!file.ContentType.StartsWith("image/"))
+            return BadRequest();
+
+        var filePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "Uploads",
+            "items",
+            file.ItemId.ToString(),
+            file.StoredFileName
+        );
+
+        return PhysicalFile(filePath, file.ContentType);
+    }
+
+    [Authorize]
+    public async Task<IActionResult> Download(string fileId)
+    {
+        var userId = _userManager.GetUserId(User);
+        var file = ItemFile.GetFileById(_context, fileId, userId!);
+
+        if (file == null)
+            return NotFound();
+
+        var filePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "Uploads",
+            "items",
+            file.ItemId.ToString(),
+            file.StoredFileName
+        );
+
+        if (!System.IO.File.Exists(filePath))
+            return NotFound();
+
+        return PhysicalFile(
+            filePath,
+            file.ContentType,
+            $"{file.Item.Id}_{file.Item.Name}"
+        );
+    }
+
+    [Authorize]
+    public async Task<IActionResult> RemoveUpload(string fileId)
+    {
+        var userId = _userManager.GetUserId(User);
+        var file = ItemFile.GetFileById(_context, fileId, userId!);
+
+        if (file == null)
+            return NotFound();
+
+        _context.ItemFiles.Remove(file);
+        _context.SaveChanges();
+        return Redirect(Request.Headers.Referer.ToString());
     }
 
     protected override void Dispose(bool disposing)

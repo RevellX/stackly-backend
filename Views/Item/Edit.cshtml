@@ -40,3 +40,38 @@
     </div>
     <button type="submit">Edit</button>
 </form>
+<p>Add new photo (max 10MB) :</p>
+<form action="/item/upload/@Model.Id" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="itemId" value="@Model.Id" />
+    
+    <input 
+        type="file" 
+        name="file" 
+        accept=".jpg, .jpeg, .png"
+    />
+    <button type="submit">Upload</button>
+</form>
+<p>Photos added:</p>
+<ul>
+    @foreach (var file in @Model.Files)
+    {
+        <li style="display: flex;">
+            <img 
+                src="@Url.Action("Preview", "Item", new { fileId = file.Id })" 
+                style="width: 250px; height: 160px; object-fit: cover;"
+                alt="@file.OriginalFileName"
+                loading="lazy"
+            />
+            <div style="display: flex; flex-direction: column;">
+                <a class="btn btn-sm btn-primary"
+                    href="@Url.Action("Download", "Item", new { fileId = file.Id })">
+                    Download
+                </a>
+                <a
+                    href="@Url.Action("RemoveUpload", "Item", new {fileId = file.Id})">
+                    Remove 
+                </a>
+            </div>
+        </li>
+    }
+</ul>
