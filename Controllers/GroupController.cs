@@ -83,7 +83,7 @@ public class GroupController : Controller
     // POST: Group/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public ActionResult Edit(string id, [Bind(include: "Name,AddUserEmail,RemoveUserEmail")] GroupEdit groupEdit)
+    public ActionResult Edit(string id, [Bind(include: "Name")] GroupEdit groupEdit)
     {
         var userId = _userManager.GetUserId(User);
         var dbGroup = Group.GetGroupById(_context, id, userId!);
@@ -92,25 +92,25 @@ public class GroupController : Controller
             if (dbGroup is null)
                 return NotFound();
 
-            // Add user by email
-            if (!string.IsNullOrEmpty(groupEdit.AddUserEmail))
-            {
-                var dbUser = _context.Users.FirstOrDefault(u => u.Email == groupEdit.AddUserEmail);
-                if (dbUser != null && dbGroup.Users.All(u => u.Id != dbUser.Id))
-                {
-                    dbGroup.Users.Add(dbUser);
-                }
-            }
-            else
-            // Remove user by email
-            if (!string.IsNullOrEmpty(groupEdit.RemoveUserEmail))
-            {
-                var removeUser = dbGroup.Users.FirstOrDefault(u => u.Email == groupEdit.RemoveUserEmail);
-                if (removeUser != null)
-                {
-                    dbGroup.Users.Remove(removeUser);
-                }
-            }
+            // // Add user by email
+            // if (!string.IsNullOrEmpty(groupEdit.AddUserEmail))
+            // {
+            //     var dbUser = _context.Users.FirstOrDefault(u => u.Email == groupEdit.AddUserEmail);
+            //     if (dbUser != null && dbGroup.Users.All(u => u.Id != dbUser.Id))
+            //     {
+            //         dbGroup.Users.Add(dbUser);
+            //     }
+            // }
+            // else
+            // // Remove user by email
+            // if (!string.IsNullOrEmpty(groupEdit.RemoveUserEmail))
+            // {
+            //     var removeUser = dbGroup.Users.FirstOrDefault(u => u.Email == groupEdit.RemoveUserEmail);
+            //     if (removeUser != null)
+            //     {
+            //         dbGroup.Users.Remove(removeUser);
+            //     }
+            // }
 
             if (!string.IsNullOrEmpty(groupEdit.Name))
                 dbGroup.Name = groupEdit.Name;
@@ -127,7 +127,8 @@ public class GroupController : Controller
         if (id is null)
             return BadRequest();
 
-        var group = _context.Groups.Find(id);
+        var userId = _userManager.GetUserId(User);
+        var group = Group.GetGroupById(_context, id, userId!);
         if (group == null)
             return NotFound();
 
@@ -139,7 +140,8 @@ public class GroupController : Controller
     [ValidateAntiForgeryToken]
     public ActionResult DeleteConfirmed(string id)
     {
-        var group = _context.Groups.Find(id);
+        var userId = _userManager.GetUserId(User);
+        var group = Group.GetGroupById(_context, id, userId!);
         if (group is null)
             return NotFound();
         _context.Groups.Remove(group);

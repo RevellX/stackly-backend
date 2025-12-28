@@ -36,6 +36,17 @@ public class Category
     {
         return _context.Categories.Any(c => c.Id == categoryId);
     }
+
+    public static bool UserCanAccessCategory(AppDbContext _context, string categoryId, string userId)
+    {
+        return _context.Categories.Any(c =>
+            c.Id == categoryId &&
+            (
+                c.Group.OwnerId == userId ||
+                c.Group.Users.Any(u => u.Id == userId)
+            )
+        );
+    }
 }
 
 public class CategoryCreate

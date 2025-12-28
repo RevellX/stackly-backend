@@ -24,8 +24,8 @@ public class ItemController : Controller
     public ActionResult Index([FromQuery] ItemQuery query)
     {
         var selectedGroupId = HttpContext.Session.GetString("SelectedGroupId") ?? "";
-        var items = _context.Items.Include(i => i.Category).Where(i => i.Category.GroupId == selectedGroupId).AsQueryable();
         var userId = _userManager.GetUserId(User);
+        var items = Item.GetItemsByGroupId(_context, selectedGroupId, userId!).AsQueryable();
 
         string? search = string.IsNullOrWhiteSpace(query.Search) ? null : $"%{query.Search}%";
 
@@ -104,7 +104,8 @@ public class ItemController : Controller
     // GET: Item/Details/5
     public ActionResult Details(string id)
     {
-        var item = _context.Items.Include(i => i.Category).FirstOrDefault(i => i.Id == id);
+        var userId = _userManager.GetUserId(User);
+        var item = Item.GetItemById(_context, id, userId!);
         if (item is null)
             return NotFound();
 
@@ -114,7 +115,8 @@ public class ItemController : Controller
     // GET: Item/Edit/5
     public ActionResult Edit(string id)
     {
-        var item = _context.Items.Include(i => i.Category).FirstOrDefault(i => i.Id == id);
+        var userId = _userManager.GetUserId(User);
+        var item = Item.GetItemById(_context, id, userId!);
         if (item is null)
             return NotFound();
         ViewData["categories"] = _context.Categories.ToList();
@@ -124,21 +126,29 @@ public class ItemController : Controller
     // POST: Item/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public ActionResult Edit(string id, [Bind(include: "Name,Description,Quantity,CategoryId")] Item item)
+    public ActionResult Edit(string id, [Bind(include: "Name,Description,Quantity,CategoryId")] ItemEdit item)
     {
         if (ModelState.IsValid)
         {
-            var dbitem = _context.Items.Include(i => i.Category).FirstOrDefault(i => i.Id == id);
+
+            var userId = _userManager.GetUserId(User);
+            var dbitem = Item.GetItemById(_context, id, userId!);
             if (dbitem is null)
                 return NotFound();
 
-            if (!_context.Categories.Any(c => c.Id == item.CategoryId))
-                return NotFound();
 
-            dbitem.Name = item.Name;
-            dbitem.Description = item.Description;
-            dbitem.Quantity = item.Quantity;
-            dbitem.CategoryId = item.CategoryId;
+            if (!string.IsNullOrEmpty(item.Name))
+                dbitem.Name = item.Name;
+            if (!string.IsNullOrEmpty(item.Description))
+                dbitem.Description = item.Description;
+            if (item.Quantity.HasValue)
+                dbitem.Quantity = (int)item.Quantity;
+            if (!string.IsNullOrEmpty(item.CategoryId))
+            {
+                if (!Category.UserCanAccessCategory(_context, item.CategoryId, userId!))
+                    return NotFound();
+                dbitem.CategoryId = item.CategoryId;
+            }
             _context.SaveChanges();
             return RedirectToAction("Index");
         }
@@ -151,7 +161,8 @@ public class ItemController : Controller
         if (id is null)
             return BadRequest();
 
-        var item = _context.Items.Find(id);
+        var userId = _userManager.GetUserId(User);
+        var item = Item.GetItemById(_context, id, userId!);
         if (item == null)
             return NotFound();
 
@@ -163,7 +174,8 @@ public class ItemController : Controller
     [ValidateAntiForgeryToken]
     public ActionResult DeleteConfirmed(string id)
     {
-        var item = _context.Items.Find(id);
+        var userId = _userManager.GetUserId(User);
+        var item = Item.GetItemById(_context, id, userId!);
         if (item is null)
             return NotFound();
         _context.Items.Remove(item);

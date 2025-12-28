@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace StacklyBackend.Models;
 
@@ -13,6 +14,25 @@ public class Item
     public int Quantity { get; set; }
     public string CategoryId { get; set; } = string.Empty;
     public Category Category { get; set; } = null!;
+    public static IQueryable<Item> GetItemsByGroupId(AppDbContext _context, string groupId, string userId)
+    {
+        return _context.Items
+            .Include(i => i.Category)
+            .Where(i =>
+                i.Category.GroupId == groupId &&
+                (i.Category.Group.OwnerId == userId ||
+                i.Category.Group.Users.Any(u => u.Id == userId))
+            );
+    }
+
+    public static Item? GetItemById(AppDbContext _context, string itemId, string userId)
+    {
+        return _context.Items.FirstOrDefault(i =>
+            i.Id == itemId &&
+            (i.Category.Group.OwnerId == userId || i.Category.Group.Users.Any(u => u.Id == userId)));
+    }
+
+
 }
 
 public class ItemCreate
@@ -21,6 +41,14 @@ public class ItemCreate
     public string? Description { get; set; } = string.Empty;
     public int Quantity { get; set; } = 1;
     public string CategoryId { get; set; } = null!;
+}
+
+public class ItemEdit
+{
+    public string? Name { get; set; }
+    public string? Description { get; set; }
+    public int? Quantity { get; set; }
+    public string? CategoryId { get; set; }
 }
 
 public class ItemQuery
