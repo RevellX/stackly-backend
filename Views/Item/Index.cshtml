@@ -16,6 +16,7 @@
         <th>Category</th>
         <th>Quantity</th>
         <th>CategoryId</th>
+        <th>Photos</th>
         <th>Actions</th>
     </tr><tr>
         <td colspan="4">
@@ -45,6 +46,7 @@
             <td>@item.Category?.Name</td>
             <td>@item.Quantity</td>
             <td>@item.CategoryId</td>
+            <td>@item.Files.Count()</td>
             <td colspan="3" class="actions">
                 <a href="/item/delete/@item.Id">Delete</a>
                 <a href="/item/edit/@item.Id">Edit</a>
