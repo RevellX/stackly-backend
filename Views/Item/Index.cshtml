@@ -5,7 +5,8 @@
 }
 
 <h2>Item - @ViewData["Title"]</h2>
-
+<p>Selected group:</p>
+@await Component.InvokeAsync("GroupDropdown")
 <p>Items list: </p>
 <table>
     <tr>

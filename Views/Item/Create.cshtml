@@ -5,6 +5,8 @@
     ViewData["Title"] = "Create";
 }
 <h2>Item - @ViewData["Title"]</h2>
+<p>Selected group:</p>
+@await Component.InvokeAsync("GroupDropdown")
 <a href="/item"><button type="button" aria-label="Go back">Go to list</button></a>
 <p>Item form: </p>
 
