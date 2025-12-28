@@ -1,57 +1,182 @@
 @model List<StacklyBackend.Models.Item>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Inventory";
+    bool isGroupSelected = ViewBag.IsGroupSelected as bool? ?? false;
 }
 
-<h2>Item - @ViewData["Title"]</h2>
-<p>Selected group:</p>
-@await Component.InvokeAsync("GroupDropdown")
-<p>Items list: </p>
-<table>
-    <tr>
-        <th>Id</th>
-        <th>Name</th>
-        <th>Description</th>
-        <th>Category</th>
-        <th>Quantity</th>
-        <th>CategoryId</th>
-        <th>Photos</th>
-        <th>Actions</th>
-    </tr><tr>
-        <td colspan="4">
-            <form>
-                <input type="text" id="seachField" name="search" placeholder="Wyszukaj przedmiot..." value="@ViewData["search"]" onchange="this.form.submit()" />
-                <select name="category" onchange="this.form.submit()">
-                    <option value="">Dowolne</option>
+@section Styles {
+    <link rel="stylesheet" href="~/css/tables.css" />
+}
+
+
+<div class="entry-section">
+    <a href="@Url.Action("Index, Home")" class="btn-back" aria-label="Go back">
+        <i class="fa-solid fa-chevron-left"></i>
+    </a>
+    <h2>@ViewData["Title"]</h2>
+</div>
+
+<div class="info-section">
+    <p>Browse and manage your inventory items.</p>
+    
+    <div class="select-group">
+        <small>Group</small>
+        @await Component.InvokeAsync("GroupDropdown")
+    </div>
+</div>
+
+@if (!isGroupSelected)
+{
+    <div class="alert-box">
+        <i class="fa-solid fa-triangle-exclamation"></i> 
+        <strong>Attention!</strong>
+        <p>Please select a group from the dropdown above to view your inventory.</p>
+    </div>
+}
+else
+{
+    <div class="toolbar-section">
+        <form method="get" class="search-filter-form">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input
+                    type="text"
+                    name="search"
+                    placeholder="Search items..."
+                    value="@ViewData["search"]"
+                    class="stackly-input"
+                    onchange="this.form.submit()"/>
+            </div>
+
+            <div class="filter-box">
+                <select name="category" class="stackly-select" onchange="this.form.submit()">
+                    <option value="">-- All categories --</option>
                     @foreach (var cat in (ViewData["categories"] as IEnumerable<StacklyBackend.Models.Category>) ?? Array.Empty<StacklyBackend.Models.Category>())
                     {
-                    <option 
-                        value="@cat.Name"
-                        selected="@(ViewData["category"] as string == cat.Name)"
-                    >
+                        <option
+                            value="@cat.Name"
+                            selected="@(ViewData["category"] as string == cat.Name)">
                             @cat.Name
-                    </option>
+                        </option>
                     }
                 </select>
-            </form>
-        </td>
-    </tr>
-    @foreach (var item in Model.ToArray() ?? Array.Empty<StacklyBackend.Models.Item>())
-    {
-        <tr>
-            <td>@item.Id</td>
-            <td>@item.Name</td>
-            <td>@item.Description</td>
-            <td>@item.Category?.Name</td>
-            <td>@item.Quantity</td>
-            <td>@item.CategoryId</td>
-            <td>@item.Files.Count()</td>
-            <td colspan="3" class="actions">
-                <a href="/item/delete/@item.Id">Delete</a>
-                <a href="/item/edit/@item.Id">Edit</a>
-                <a href="/item/details/@item.Id">Details</a>
-            </td>
-        </tr>
-    }
-</table>
+            </div>
+        </form>
+    </div>
+
+
+    <div class="items-grid">
+        @if (Model == null || !Model.Any())
+        {
+            <div class="empty-state">
+                <i class="fa-solid fa-box-open"></i>
+                <h3>No items found</h3>
+                <p>Try changing filters or add a new item.</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var item in Model)
+            {
+                <div class="item-card">
+                    <div class="item-card__image">
+                        @if (item.Files != null && item.Files.Any())
+                        {
+                            <div class="placeholder-img">
+                                <i class="fa-regular fa-image"></i>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="placeholder-img">
+                                <i class="fa-solid fa-cube"></i>
+                            </div>
+                        }
+                        <span class="card-badge">@item.Category?.Name</span>
+                    </div>
+                    <div class="item-card__content">
+                        <div class="item-header">
+                            <h3 title="@item.Name">
+                                @item.Name
+                            </h3>
+                            <span class="quantity-tag @(item.Quantity < 5 ? "low-stock" : "")">
+                                x @item.Quantity
+                            </span>
+                        </div>
+
+                        <p class="item-desc" title="@item.Description">
+                            @(string.IsNullOrEmpty(item.Description) ? "No description provided." : item.Description)
+                        </p>
+                    </div>
+                    <div class="item-card__actions">
+                        <a asp-action="Details" asp-route-id="@item.Id" class="btn-card-action" title="Details">
+                            <i class="fa-solid fa-circle-info"></i>
+                        </a>
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn-card-action" title="Edit">
+                            <i class="fa-solid fa-pen"></i>
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn-card-action delete" title="Delete">
+                            <i class="fa-solid fa-trash"></i>
+                        </a>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+}
+
+
+@* *@
+@* *@
+@* *@
+@* <p>Selected group:</p> *@
+@* @await Component.InvokeAsync("GroupDropdown") *@
+@* <p>Items list: </p> *@
+@* <table> *@
+@*     <tr> *@
+@*         <th>Id</th> *@
+@*         <th>Name</th> *@
+@*         <th>Description</th> *@
+@*         <th>Category</th> *@
+@*         <th>Quantity</th> *@
+@*         <th>CategoryId</th> *@
+@*         <th>Photos</th> *@
+@*         <th>Actions</th> *@
+@*     </tr><tr> *@
+@*         <td colspan="4"> *@
+@*             <form> *@
+@*                 <input type="text" id="seachField" name="search" placeholder="Wyszukaj przedmiot..." value="@ViewData["search"]" onchange="this.form.submit()" /> *@
+@*                 <select name="category" onchange="this.form.submit()"> *@
+@*                     <option value="">Dowolne</option> *@
+@*                     @foreach (var cat in (ViewData["categories"] as IEnumerable<StacklyBackend.Models.Category>) ?? Array.Empty<StacklyBackend.Models.Category>()) *@
+@*                     { *@
+@*                     <option  *@
+@*                         value="@cat.Name" *@
+@*                         selected="@(ViewData["category"] as string == cat.Name)" *@
+@*                     > *@
+@*                             @cat.Name *@
+@*                     </option> *@
+@*                     } *@
+@*                 </select> *@
+@*             </form> *@
+@*         </td> *@
+@*     </tr> *@
+@*     @foreach (var item in Model.ToArray() ?? Array.Empty<StacklyBackend.Models.Item>()) *@
+@*     { *@
+@*         <tr> *@
+@*             <td>@item.Id</td> *@
+@*             <td>@item.Name</td> *@
+@*             <td>@item.Description</td> *@
+@*             <td>@item.Category?.Name</td> *@
+@*             <td>@item.Quantity</td> *@
+@*             <td>@item.CategoryId</td> *@
+@*             <td>@item.Files.Count()</td> *@
+@*             <td colspan="3" class="actions"> *@
+@*                 <a href="/item/delete/@item.Id">Delete</a> *@
+@*                 <a href="/item/edit/@item.Id">Edit</a> *@
+@*                 <a href="/item/details/@item.Id">Details</a> *@
+@*             </td> *@
+@*         </tr> *@
+@*     } *@
+@* </table> *@

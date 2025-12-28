@@ -62,27 +62,3 @@
     color: var(--text-white);
 }
 
-/* Mały błąd pod polem */
-.text-danger {
-    color: var(--error-red);
-    font-size: 0.8rem;
-    margin-top: 0.2rem;
-    font-weight: 500;
-}
-
-/* Alert box (Brak grupy) */
-.alert-box {
-    padding: 1rem;
-    background-color: var(--secondary-blue); /* Spójne tło */
-    color: var(--text-dark);
-    border: 1px solid var(--status-warning);
-    border-left: 5px solid var(--status-warning); /* Mocniejszy akcent z lewej */
-    border-radius: var(--border-radius);
-    text-align: center;
-    margin-top: 20px;
-}
-
-.alert-box strong,
-.alert-box i {
-    color: var(--status-warning); /* Ikona i nagłówek w kolorze ostrzegawczym */
-}

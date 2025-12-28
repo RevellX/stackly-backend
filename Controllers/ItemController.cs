@@ -25,20 +25,35 @@ public class ItemController : Controller
     // Accept optional route/query parameters (bound from route or query string)
     public ActionResult Index([FromQuery] ItemQuery query)
     {
-        var selectedGroupId = HttpContext.Session.GetString("SelectedGroupId") ?? "";
+        var selectedGroupId = HttpContext.Session.GetString("SelectedGroupId");
         var userId = _userManager.GetUserId(User);
+
+        if (string.IsNullOrEmpty(selectedGroupId))
+        {
+            ViewBag.IsGroupSelected = false;
+            
+            ViewData["categories"] = new List<Category>();
+            ViewData["search"] = query.Search;
+            
+            return View(new List<Item>());
+        }
+        
+        ViewBag.IsGroupSelected = true;
+        
         var items = Item.GetItemsByGroupId(_context, selectedGroupId, userId!).AsQueryable();
 
         string? search = string.IsNullOrWhiteSpace(query.Search) ? null : $"%{query.Search}%";
 
+        // Search
         if (!string.IsNullOrEmpty(search))
             items = items.Where(i =>
-                    EF.Functions.Like(i.Id, search)
-                    || EF.Functions.Like(i.Name, search)
+                    EF.Functions.Like(i.Name, search)
                     || (i.Description != null && EF.Functions.Like(i.Description, search))
+                    // || EF.Functions.Like(i.Id, search)
                 // || EF.Functions.Like(i.Category!.Name, search)
             );
 
+        // Category filter
         if (!string.IsNullOrEmpty(query.Category))
             items = items.Where(i =>
                 EF.Functions.Like(i.Category.Name, query.Category)
