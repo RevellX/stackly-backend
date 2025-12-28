@@ -182,6 +182,124 @@ public class ItemController : Controller
         _context.SaveChanges();
         return RedirectToAction("Index");
     }
+    [HttpPost]
+    [Authorize]
+    public async Task<IActionResult> Upload(string itemId, IFormFile file)
+    {
+        var userId = _userManager.GetUserId(User);
+        var dbitem = Item.GetItemById(_context, itemId, userId!);
+        if (dbitem is null)
+            return NotFound();
+        if (file == null || file.Length == 0)
+            return BadRequest("File missing");
+
+        const long MaxFileSize = 10 * 1024 * 1024; // 10 MB
+        if (file.Length > MaxFileSize)
+        {
+            return BadRequest("File too large. Maximum allowed size is 10 MB.");
+        }
+
+        var uploadsPath = Path.Combine(
+            AppContext.BaseDirectory,
+            "Uploads",
+            "items",
+            itemId.ToString()
+        );
+
+        Directory.CreateDirectory(uploadsPath);
+
+        string newId;
+        do
+        {
+            newId = Generator.GetRandomString(StringType.Alphanumeric, StringCase.Lowercase, 10);
+        } while (_context.Items.FirstOrDefault(p => p.Id.Equals(newId)) is not null);
+
+        var storedFileName = $"{newId}{Path.GetExtension(file.FileName)}";
+        var filePath = Path.Combine(uploadsPath, storedFileName);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        var dbFile = new ItemFile
+        {
+            Id = newId,
+            ItemId = itemId,
+            OriginalFileName = file.FileName,
+            StoredFileName = storedFileName,
+            ContentType = file.ContentType
+        };
+
+        _context.ItemFiles.Add(dbFile);
+        await _context.SaveChangesAsync();
+
+        return Redirect(Request.Headers.Referer.ToString());
+    }
+
+    [Authorize]
+    public async Task<IActionResult> Preview(string fileId)
+    {
+        var userId = _userManager.GetUserId(User);
+        var file = ItemFile.GetFileById(_context, fileId, userId!);
+
+        if (file == null)
+            return NotFound();
+
+        if (!file.ContentType.StartsWith("image/"))
+            return BadRequest();
+
+        var filePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "Uploads",
+            "items",
+            file.ItemId.ToString(),
+            file.StoredFileName
+        );
+
+        return PhysicalFile(filePath, file.ContentType);
+    }
+
+    [Authorize]
+    public async Task<IActionResult> Download(string fileId)
+    {
+        var userId = _userManager.GetUserId(User);
+        var file = ItemFile.GetFileById(_context, fileId, userId!);
+
+        if (file == null)
+            return NotFound();
+
+        var filePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "Uploads",
+            "items",
+            file.ItemId.ToString(),
+            file.StoredFileName
+        );
+
+        if (!System.IO.File.Exists(filePath))
+            return NotFound();
+
+        return PhysicalFile(
+            filePath,
+            file.ContentType,
+            $"{file.Item.Id}_{file.Item.Name}"
+        );
+    }
+
+    [Authorize]
+    public async Task<IActionResult> RemoveUpload(string fileId)
+    {
+        var userId = _userManager.GetUserId(User);
+        var file = ItemFile.GetFileById(_context, fileId, userId!);
+
+        if (file == null)
+            return NotFound();
+
+        _context.ItemFiles.Remove(file);
+        _context.SaveChanges();
+        return Redirect(Request.Headers.Referer.ToString());
+    }
 
     protected override void Dispose(bool disposing)
     {

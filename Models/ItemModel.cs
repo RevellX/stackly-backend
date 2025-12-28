@@ -14,10 +14,12 @@ public class Item
     public int Quantity { get; set; }
     public string CategoryId { get; set; } = string.Empty;
     public Category Category { get; set; } = null!;
+    public ICollection<ItemFile> Files { get; set; } = null!;
     public static IQueryable<Item> GetItemsByGroupId(AppDbContext _context, string groupId, string userId)
     {
         return _context.Items
             .Include(i => i.Category)
+            .Include(i => i.Files)
             .Where(i =>
                 i.Category.GroupId == groupId &&
                 (i.Category.Group.OwnerId == userId ||
@@ -27,7 +29,7 @@ public class Item
 
     public static Item? GetItemById(AppDbContext _context, string itemId, string userId)
     {
-        return _context.Items.FirstOrDefault(i =>
+        return _context.Items.Include(i => i.Files).FirstOrDefault(i =>
             i.Id == itemId &&
             (i.Category.Group.OwnerId == userId || i.Category.Group.Users.Any(u => u.Id == userId)));
     }

@@ -6,6 +6,7 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<Example> Examples { get; set; }
     public DbSet<User> AppUsers { get; set; }
     public DbSet<Item> Items { get; set; }
+    public DbSet<ItemFile> ItemFiles { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Group> Groups { get; set; }
 
