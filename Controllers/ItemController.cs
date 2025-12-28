@@ -67,7 +67,6 @@ public class ItemController : Controller
         if (string.IsNullOrEmpty(selectedGroupId))
         {
             ViewBag.IsGroupSelected = false;
-            // return RedirectToAction("Index", "Category");
         }
         else
         {
@@ -80,47 +79,53 @@ public class ItemController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public ActionResult Create([Bind(include: "Name,Description,Quantity,CategoryId")] ItemCreate item)
     {
         var selectedGroupId = HttpContext.Session.GetString("SelectedGroupId") ?? "";
         var userId = _userManager.GetUserId(User);
-        var dbCategory = Category.GetCategoryById(_context, item.CategoryId, userId!);
-        if (dbCategory is null)
-            return NotFound();
-        if (!Group.IsUserGroupMember(_context, dbCategory.GroupId, userId!))
+        
+        // Zabezpieczenie jeśli sesja wygasła
+        if (string.IsNullOrEmpty(selectedGroupId))
         {
-            return Forbid();
+            return RedirectToAction("Index", "Item");
         }
+
         if (ModelState.IsValid)
         {
-            string id;
-            do
+            // weryfikacja czy id grupy się zgadza, bo mozna podmienic w f12
+            var category = _context.Categories.FirstOrDefault(c => c.Id == item.CategoryId);
+
+            if (category == null || category.GroupId != selectedGroupId)
             {
-                id = Generator.GetRandomString(StringType.Alphanumeric, StringCase.Lowercase, 10);
-            } while (_context.Items.FirstOrDefault(p => p.Id.Equals(id)) is not null);
-
-            if (!_context.Categories.Any(c => c.Id == item.CategoryId))
-                return NotFound();
-
-            _context.Items.Add(new Item
+                ModelState.AddModelError("CategoryId" , "Invalid category for the selected group.");
+            }
+            else
             {
-                Id = id,
-                Name = item.Name,
-                Description = item.Description,
-                Quantity = item.Quantity,
-                CategoryId = item.CategoryId
-
-            });
-            _context.SaveChanges();
-            return RedirectToAction("Index");
+                var newItem = new Item
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = item.Name,
+                    Description = item.Description,
+                    Quantity = item.Quantity,
+                    CategoryId = item.CategoryId
+                };
+                
+                _context.Items.Add(newItem);
+                _context.SaveChanges();
+                return RedirectToAction("Index");
+            }
         }
-        ViewData["categories"] = _context.Categories
-            .OrderBy(c => c.Name)
-            .ToList()
-            .ToSelectList(c => c.Id, c => c.Name);
+        // Jeśli błąd
+        // wyświetl formularz a nie komunikat o wybraniu grupy
+        ViewBag.IsGroupSelected = true;
         
-        ViewData["error"] = "There has been an error while creating new item";
+        var categoriesList = Category.GetCategoriesByGroupId(_context, selectedGroupId, userId!);
+        
+        ViewData["categories"] = new SelectList(categoriesList, "Id", "Name", item.CategoryId);
+        // ViewData["error"] = "There has been an error while creating new item";
         return View(item);
+        
     }
 
     // GET: Item/Details/5
