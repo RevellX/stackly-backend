@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using StacklyBackend.Models;
 using StacklyBackend.Utils;
@@ -62,7 +63,19 @@ public class ItemController : Controller
     {
         var selectedGroupId = HttpContext.Session.GetString("SelectedGroupId") ?? "";
         var userId = _userManager.GetUserId(User);
-        ViewData["categories"] = Category.GetCategoriesByGroupId(_context, selectedGroupId, userId!);
+
+        if (string.IsNullOrEmpty(selectedGroupId))
+        {
+            ViewBag.IsGroupSelected = false;
+            // return RedirectToAction("Index", "Category");
+        }
+        else
+        {
+            ViewBag.IsGroupSelected = true;
+            var categories = Category.GetCategoriesByGroupId(_context, selectedGroupId, userId!);
+            ViewData["categories"] = new SelectList(categories, "Id", "Name");
+        }
+        
         return View();
     }
 

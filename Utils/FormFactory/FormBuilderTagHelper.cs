@@ -41,11 +41,5 @@ public class  FormBuilderTagHelper : TagHelper
                 $"<div role=\"alert\" class=\"stackly-form__error\">{error}</div>";
             output.PreElement.AppendHtml(errorHtml);
         }
-        
-        // error summary
-        // string errorHtml = $"<div role=\"alert\" class=\"validation-summary-errors\">" +
-        //                    $"</div>";
-        //
-        // output.PostContent.AppendHtml(errorHtml);
     }
 }

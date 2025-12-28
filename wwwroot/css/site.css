@@ -341,6 +341,14 @@ footer {
     margin-bottom: 0.5rem;
 }
 
+.select-group {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    align-items: center;
+}
+
 /* Item details */
 .details-container {
     margin-top: 1rem;

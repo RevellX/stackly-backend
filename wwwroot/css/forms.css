@@ -57,3 +57,12 @@
     font-weight: bold;
     /*font-size: 0.85rem;*/
 }
+
+.alert-box {
+    padding: 20px;
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+    border-radius: 5px;
+    text-align: center;
+}
