@@ -33,15 +33,15 @@ public class ItemController : Controller
 
         if (!string.IsNullOrEmpty(search))
             items = items.Where(i =>
-                EF.Functions.Like(i.Id, search)
-                || EF.Functions.Like(i.Name, search)
-                || (i.Description != null && EF.Functions.Like(i.Description, search))
-            // || EF.Functions.Like(i.Category!.Name, search)
+                    EF.Functions.Like(i.Id, search)
+                    || EF.Functions.Like(i.Name, search)
+                    || (i.Description != null && EF.Functions.Like(i.Description, search))
+                // || EF.Functions.Like(i.Category!.Name, search)
             );
 
         if (!string.IsNullOrEmpty(query.Category))
             items = items.Where(i =>
-            EF.Functions.Like(i.Category.Name, query.Category)
+                EF.Functions.Like(i.Category.Name, query.Category)
             );
 
         if (query.MinQuantity.HasValue)
@@ -74,7 +74,7 @@ public class ItemController : Controller
             var categories = Category.GetCategoriesByGroupId(_context, selectedGroupId, userId!);
             ViewData["categories"] = new SelectList(categories, "Id", "Name");
         }
-        
+
         return View();
     }
 
@@ -84,7 +84,7 @@ public class ItemController : Controller
     {
         var selectedGroupId = HttpContext.Session.GetString("SelectedGroupId") ?? "";
         var userId = _userManager.GetUserId(User);
-        
+
         // Zabezpieczenie jeśli sesja wygasła
         if (string.IsNullOrEmpty(selectedGroupId))
         {
@@ -98,34 +98,40 @@ public class ItemController : Controller
 
             if (category == null || category.GroupId != selectedGroupId)
             {
-                ModelState.AddModelError("CategoryId" , "Invalid category for the selected group.");
+                ModelState.AddModelError("CategoryId", "Invalid category for the selected group.");
             }
             else
             {
+                string id;
+                do
+                {
+                    id = Generator.GetRandomString(StringType.Alphanumeric, StringCase.Lowercase, 10);
+                } while (_context.Items.FirstOrDefault(p => p.Id.Equals(id)) is not null);
+
                 var newItem = new Item
                 {
-                    Id = Guid.NewGuid().ToString(),
+                    Id = id,
                     Name = item.Name,
                     Description = item.Description,
                     Quantity = item.Quantity,
                     CategoryId = item.CategoryId
                 };
-                
+
                 _context.Items.Add(newItem);
                 _context.SaveChanges();
                 return RedirectToAction("Index");
             }
         }
+
         // Jeśli błąd
         // wyświetl formularz a nie komunikat o wybraniu grupy
         ViewBag.IsGroupSelected = true;
-        
+
         var categoriesList = Category.GetCategoriesByGroupId(_context, selectedGroupId, userId!);
-        
+
         ViewData["categories"] = new SelectList(categoriesList, "Id", "Name", item.CategoryId);
         // ViewData["error"] = "There has been an error while creating new item";
         return View(item);
-        
     }
 
     // GET: Item/Details/5

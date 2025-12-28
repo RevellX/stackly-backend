@@ -308,45 +308,90 @@ footer {
     color: red
 }
 
+/* --- HEADER SECTION STYLING --- */
+
 .entry-section {
     align-items: center;
     display: flex;
     flex-direction: row;
     gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-.entry-section a {
-    text-decoration: none;
-}
-
-.entry-section a button {
-    background-color: transparent;
-    border: none;
-    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
     color: var(--text-dark);
+}
+
+.btn-back {
     display: flex;
     justify-content: center;
     align-items: center;
+
+    background-color: var(--sidebar-light);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius);
+
+    color: var(--text-dark);
+    font-size: 1rem;
+    padding: 0.6rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-light);
 }
 
-.entry-section a button:hover {
+.btn-back:hover {
     cursor: pointer;
+    border-color: var(--primary-blue);
+    color: var(--primary-blue);
+    transform: translateX(-2px);
 }
 
 .entry-section h2 {
-    width: fit-content;
-}
-.info-section {
-    margin-bottom: 0.5rem;
+    margin: 0;
+    font-weight: 700;
+    color: var(--text-dark);
 }
 
-.select-group {
+.info-section {
+    margin-bottom: 2rem;
+    color: var(--text-gray);
+    font-size: 0.95rem;
+}
+
+/* --- GROUP SELECTOR STYLING --- */
+/* To jest kontener, w którym siedzi komponent Patryka */
+
+.info-section > div {
     display: flex;
-    flex-direction: row;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
     align-items: center;
+    gap: 0.5rem;
+    background-color: var(--secondary-blue); /* Wyróżnienie sekcji kontekstu */
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    width: fit-content;
+    border: 1px solid transparent;
+}
+
+/* Stylujemy selecta wewnątrz komponentu */
+.info-section select {
+    background-color: var(--sidebar-light);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius);
+    padding: 0.25rem 2rem 0.25rem 0.5rem; /* Miejsce na strzałkę */
+    color: var(--text-dark);
+    font-size: 0.9rem;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.info-section select:focus {
+    border-color: var(--primary-blue);
+}
+
+.info-section small {
+    font-weight: bold;
+    color: var(--text-dark);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
 }
 
 /* Item details */

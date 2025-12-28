@@ -5,13 +5,12 @@
     bool isGroupSelected = ViewBag.IsGroupSelected as bool? ?? false;
 }
 
-
 @section Styles {
     <link rel="stylesheet" href="~/css/forms.css" />
 }
 
 <div class="entry-section">
-    <a href="@Url.Action("Index")" aria-label="Go back">
+    <a href="@Url.Action("Index")" class="btn-back" aria-label="Go back">
         <i class="fa-solid fa-chevron-left"></i>
     </a>
     
@@ -27,7 +26,6 @@
     </div>
     
 </div>
-
 
 @if (!isGroupSelected)
 {
