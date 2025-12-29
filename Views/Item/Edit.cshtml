@@ -15,7 +15,7 @@
     </div>
 }
 
-<form action="/item/edit/@Model.Id" method="post">
+<form action="/item/edit/@Model.Id" method="post" enctype="multipart/form-data">
     @Html.AntiForgeryToken()
     <input type="hidden" id="Id" name="Id" value="@Model.Id" />
     <div>
@@ -39,15 +39,12 @@
         </select>
     </div>
     <button type="submit">Edit</button>
-</form>
-<p>Add new photo (max 10MB) :</p>
-<form action="/item/upload/@Model.Id" method="post" enctype="multipart/form-data">
-    <input type="hidden" name="itemId" value="@Model.Id" />
-    
+    <p>Add new photos (max 10MB) :</p>
     <input 
         type="file" 
-        name="file" 
+        name="Files"
         accept=".jpg, .jpeg, .png"
+        multiple
     />
     <button type="submit">Upload</button>
 </form>

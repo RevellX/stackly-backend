@@ -17,7 +17,7 @@
     </div>
 }
 
-<form action="/item/create" method="post">
+<form action="/item/create" method="post" enctype="multipart/form-data">
     @Html.AntiForgeryToken()
     <div>
         <label for="Name">Name</label>
@@ -41,5 +41,11 @@
             }
         </select>
     </div>
+    <input 
+        type="file" 
+        name="Files"
+        accept=".jpg, .jpeg, .png"
+        multiple
+    />
     <button type="submit">Create</button>
 </form>

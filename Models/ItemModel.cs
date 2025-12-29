@@ -43,6 +43,7 @@ public class ItemCreate
     public string? Description { get; set; } = string.Empty;
     public int Quantity { get; set; } = 1;
     public string CategoryId { get; set; } = null!;
+    public List<IFormFile>? Files { get; set; }
 }
 
 public class ItemEdit
@@ -51,6 +52,7 @@ public class ItemEdit
     public string? Description { get; set; }
     public int? Quantity { get; set; }
     public string? CategoryId { get; set; }
+    public List<IFormFile>? Files { get; set; }
 }
 
 public class ItemQuery
