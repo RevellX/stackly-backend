@@ -138,7 +138,7 @@ public class ItemController : Controller
                 }
             }
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return RedirectToAction("Index");
         }
         ViewData["categories"] = _context.Categories.ToList();

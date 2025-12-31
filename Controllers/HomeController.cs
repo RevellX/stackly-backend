@@ -1,23 +1,17 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using StacklyBackend.Models;
 
 namespace StacklyBackend.Controllers;
 
-public class HomeController : Controller
+public class HomeController(AppDbContext _context) : Controller
 {
-    private readonly ILogger<HomeController> _logger;
-
-    public HomeController(ILogger<HomeController> logger)
-    {
-        _logger = logger;
-    }
-
     public IActionResult Index()
     {
-        ViewData["items_stored_total"] = 0;
-        ViewData["categories_stored_total"] = 0;
-        ViewData["users_stored_total"] = 0;
+        ViewData["items_stored_total"] = _context.Items.Count();
+        ViewData["categories_stored_total"] = _context.Categories.Count();
+        ViewData["users_stored_total"] = _context.Users.Count();
         return View();
     }
 

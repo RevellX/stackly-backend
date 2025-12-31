@@ -2,7 +2,42 @@
     ViewData["Title"] = "Home Page";
 }
 
-@* <div class="text-center"> *@
-@*     <h1 class="display-4">Welcome</h1> *@
-@*     <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p> *@
-@* </div> *@
+<main class="dashboard-content">
+  <header class="welcome-header">
+    <h1>Witaj w Stackly!</h1>
+    <p>Twoje centrum zarządzania przedmiotami i grupami.</p>
+  </header>
+
+  <section class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-label">Przedmioty</span>
+      <span class="stat-value">@ViewData["items_stored_total"]</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Kategorie</span>
+      <span class="stat-value">@ViewData["categories_stored_total"]</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Użytkownicy</span>
+      <span class="stat-value">@ViewData["users_stored_total"]</span>
+    </div>
+  </section>
+
+  <section class="info-section">
+    <h2>Co możesz tutaj zrobić?</h2>
+    <div class="features-grid">
+      <div class="feature-item">
+        <h3>📂 Grupy i Kategorie</h3>
+        <p>Twórz główne grupy projektowe i dziel je na mniejsze kategorie dla lepszej organizacji.</p>
+      </div>
+      <div class="feature-item">
+        <h3>📦 Zarządzanie Przedmiotami</h3>
+        <p>Dodawaj przedmioty, określaj ich ilość, dodawaj opisy oraz zdjęcia, by nic nie zginęło.</p>
+      </div>
+      <div class="feature-item">
+        <h3>👥 Współpraca</h3>
+        <p>Zaproś innych użytkowników wpisując ich e-mail. Wspólnie możecie edytować zasoby grupy.</p>
+      </div>
+    </div>
+  </section>
+</main>
