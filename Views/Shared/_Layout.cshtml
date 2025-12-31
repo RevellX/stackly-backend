@@ -18,29 +18,58 @@
 </head>
 <body>
 <div class="wrapper">
+    <button id="mobile-user-btn" class="mobile-user-toggle">
+        <i class="fa-solid fa-user"></i>
+    </button>
+    <div class="logo-mobile"><a asp-area="" asp-controller="Home" asp-action="Index"></a></div>
     <nav id="nav" class="nav">
-
         <div class="logo"><a asp-area="" asp-controller="Home" asp-action="Index"></a></div>
+        
         <div class="nav-items">
             <ul class="nav-links">
 
                 <li><a asp-area="" asp-controller="Item" asp-action="Create" class="nav-link"> <span class="icon"><i class="fa-solid fa-cart-plus"></i></span>Dodaj Produkt</a></li>
-                <li><a asp-area="" asp-controller="Item" asp-action="Index" class="nav-link"> <span class="icon"><i class="fa-solid fa-barcode"></i></span>Lista
-                    produktów</a></li>
+                <li>
+                    <a asp-area="" asp-controller="Item" asp-action="Index" class="nav-link"> <span class="icon"><i class="fa-solid fa-barcode"></i></span>Lista
+                        produktów</a></li>
                 <li><a asp-area="" asp-controller="Category" asp-action="Index" class="nav-link"> <span class="icon"><i class="fa-solid fa-icons"></i></span>Kategorie</a></li>
                 <li><a asp-area="" asp-controller="Group" asp-action="Index" class="nav-link"> <span class="icon"><i class="fa-solid fa-layer-group"></i></span>Grupy</a></li>
+                <li><partial name="_LoginPartial" /></li>
             </ul>
-            <partial name="_LoginPartial"/>
         </div>
 
     </nav>
     <div class="main-area">
         @RenderBody()
-
     </div>
+</div>
 
+<nav class="mobile-nav">
+    <a asp-area="" asp-controller="Item" asp-action="Index" class="mobile-nav-link">
+        <i class="fa-solid fa-barcode"></i>
+        Lista produktów
+    </a>
+    <a asp-area="" asp-controller="Item" asp-action="Create" class="mobile-nav-link">
+        <i class="fa-solid fa-cart-plus"></i>
+        Dodaj Produkt
+    </a>
+    <a asp-area="" asp-controller="Category" asp-action="Index" class="mobile-nav-link">
+        <i class="fa-solid fa-icons"></i>
+        Kategorie
+    </a>
+        <a asp-area="" asp-controller="Group" asp-action="Index" class="mobile-nav-link">
+        <i class="fa-solid fa-layer-group"></i>
+        Grupy
+    </a>
+</nav>
 
-
+<div id="mobile-account-menu" class="mobile-account-overlay">
+    <div class="mobile-account-header">
+        <button id="close-account-menu" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="mobile-account-content">
+        <partial name="_LoginPartial" />
+    </div>
 </div>
 
 @* <footer class="footer"> *@
@@ -53,4 +82,17 @@
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
 @await RenderSectionAsync("Scripts", required: false)
+
+<script>
+    
+    $(document).ready(function() {
+        $('#mobile-user-btn').click(function() {
+            $('#mobile-account-menu').addClass('open');
+        });
+
+        $('#close-account-menu').click(function() {
+            $('#mobile-account-menu').removeClass('open');
+        });
+    });
+</script>
 </html>
