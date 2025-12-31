@@ -1,34 +1,39 @@
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using StacklyBackend.Models;
 using StacklyBackend.Utils;
 
 namespace StacklyBackend.Controllers;
 
+[Authorize]
 public class CategoryController : Controller
 {
-    private static AppDbContext _context = new AppDbContext();
+    private AppDbContext _context = null!;
+    private UserManager<User> _userManager = null!;
 
-    public CategoryController()
+    public CategoryController(UserManager<User> userManager, AppDbContext dbContext)
     {
-        _context = new AppDbContext();
+        _context = dbContext;
+        _userManager = userManager;
     }
 
     [Authorize]
     // GET: Category
     public ActionResult Index()
     {
-        // if (User.Identity == null || !User.Identity.IsAuthenticated)
-        // {
-        //     return RedirectToPage("/Account/Login", new { area = "Identity" });
-        // }
-        return View(_context.Categories.ToList());
+        var userId = _userManager.GetUserId(User);
+        var selectedId = HttpContext.Session.GetString("SelectedGroupId") ?? "";
+        return View(Category.GetCategoriesByGroupId(_context, selectedId, userId!));
     }
 
     // GET: Category/Details/5
     public ActionResult Details(string id)
     {
-        var category = _context.Categories.Find(id);
+        var userId = _userManager.GetUserId(User);
+        var category = Category.GetCategoryById(_context, id, userId!);
         if (category is null)
             return NotFound();
 
@@ -38,20 +43,25 @@ public class CategoryController : Controller
     // GET: Category/Create
     public ActionResult Create()
     {
-        return View();
+        var userId = _userManager.GetUserId(User);
+        var selectedId = HttpContext.Session.GetString("SelectedGroupId") ?? "";
+        ViewData["groups"] = Group.GetGroupsForUser(_context, userId!);
+        return View(new CategoryCreate { GroupId = selectedId });
     }
 
     // POST: Category/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public ActionResult Create([Bind(include: "Name")] CategoryCreate category)
+    public ActionResult Create([Bind(include: "Name,GroupId")] CategoryCreate category)
     {
+        var userId = _userManager.GetUserId(User);
         if (ModelState.IsValid)
         {
-            var dbCategory = _context.Categories
-                       .FirstOrDefault(c => c.Name == category.Name);
-
-            if (dbCategory is not null)
+            if (!Group.IsUserGroupMember(_context, category.GroupId, userId!))
+            {
+                return Forbid();
+            }
+            if (Category.IsCategoryInGroup(_context, category.GroupId, category.Name))
             {
                 ViewData["error"] = $"Category with name: \"{category.Name}\" already exists";
             }
@@ -61,27 +71,35 @@ public class CategoryController : Controller
                 do
                 {
                     id = Generator.GetRandomString(StringType.Alphanumeric, StringCase.Lowercase, 10);
-                } while (_context.Examples.FirstOrDefault(p => p.Id.Equals(id)) is not null);
+                } while (Category.CategoryExistsById(_context, id));
+
+                if (!Group.GroupExistsById(_context, category.GroupId))
+                    return NotFound();
 
                 _context.Categories.Add(new Category
                 {
                     Id = id,
-                    Name = category.Name
+                    Name = category.Name,
+                    GroupId = category.GroupId
                 });
                 _context.SaveChanges();
                 return RedirectToAction("Index");
             }
         }
-
+        ViewData["groups"] = Group.GetGroupsForUser(_context, userId!);
         return View(category);
     }
 
     // GET: Category/Edit/5
     public ActionResult Edit(string id)
     {
-        var category = _context.Categories.Find(id);
+        var userId = _userManager.GetUserId(User);
+
+        var category = Category.GetCategoryById(_context, id, userId!);
         if (category is null)
             return NotFound();
+
+        ViewData["groups"] = Group.GetGroupsForUser(_context, userId!);
 
         return View(category);
     }
@@ -89,35 +107,46 @@ public class CategoryController : Controller
     // POST: Category/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public ActionResult Edit(string id, [Bind(include: "Name")] CategoryCreate category)
+    public ActionResult Edit(string id, [Bind(include: "Name,GroupId")] CategoryEdit categoryEdit)
     {
+        var userId = _userManager.GetUserId(User);
         if (ModelState.IsValid)
         {
-            var dbCategory = _context.Categories.Find(id);
+            var dbCategory = Category.GetCategoryById(_context, id, userId!);
             if (dbCategory is null)
                 return NotFound();
-            var otherDbCategory = _context.Categories.FirstOrDefault(c => c.Name == category.Name);
-            if (otherDbCategory is not null)
+
+            var dbGroup = Group.GetGroupById(_context, categoryEdit.GroupId!, userId!);
+            if (dbGroup is null)
+                return NotFound();
+
+            if (Category.IsCategoryInGroup(_context, categoryEdit.GroupId!, categoryEdit.Name!))
             {
-                ViewData["error"] = $"Category with name: \"{category.Name}\" already exists";
+                ViewData["error"] = $"Category with name: \"{categoryEdit.Name}\" already exists";
             }
             else
             {
-                dbCategory.Name = category.Name;
+                if (!string.IsNullOrEmpty(categoryEdit.Name))
+                    dbCategory.Name = categoryEdit.Name;
+                if (!string.IsNullOrEmpty(categoryEdit.GroupId))
+                    dbCategory.GroupId = categoryEdit.GroupId!;
                 _context.SaveChanges();
                 return RedirectToAction("Index");
             }
         }
-        return View(category);
+        ViewData["groups"] = Group.GetGroupsForUser(_context, userId!);
+        return View(categoryEdit);
     }
 
     // GET: Category/Delete/5
     public ActionResult Delete(string id)
     {
+        var userId = _userManager.GetUserId(User);
+
         if (id is null)
             return BadRequest();
 
-        var category = _context.Categories.Find(id);
+        var category = Category.GetCategoryById(_context, id, userId!);
         if (category == null)
             return NotFound();
 
@@ -129,7 +158,8 @@ public class CategoryController : Controller
     [ValidateAntiForgeryToken]
     public ActionResult DeleteConfirmed(string id)
     {
-        var category = _context.Categories.Find(id);
+        var userId = _userManager.GetUserId(User);
+        var category = Category.GetCategoryById(_context, id, userId!);
         if (category is null)
             return NotFound();
         _context.Categories.Remove(category);

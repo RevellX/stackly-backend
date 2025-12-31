@@ -5,11 +5,28 @@
 }
 
 <h2>Category - @ViewData["Title"]</h2>
+<p>Selected group:</p>
+@await Component.InvokeAsync("GroupDropdown")
 <a href="/category/create"><button>Add new category</button></a>
 <p>Categories list: </p>
-<ul>
-    @foreach (Category item in Model.ToArray() ?? Array.Empty<StacklyBackend.Models.Category>())
+<table>
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>GroupId</th>
+        <th>Group</th>
+        <th>Actions</th>
+    </tr>
+    @foreach (Category category in Model.ToArray() ?? Array.Empty<StacklyBackend.Models.Category>())
     {
-        <li>@item.Id @item.Name<a href="/category/details/@item.Id">Details</a> <a href="/category/delete/@item.Id">Delete</a> <a href="/category/edit/@item.Id">Edit</a></li>
+        <tr>
+            <td>@category.Id</td>
+            <td>@category.Name</td>
+            <td>@category.GroupId</td>
+            <td>@category.Group?.Name</td>
+            <td><a href="/category/delete/@category.Id">Delete</a></td>
+            <td><a href="/category/edit/@category.Id">Edit</a></td>
+            <td><a href="/category/details/@category.Id">Details</a></td>
+        </tr>
     }
-</ul>
+</table>

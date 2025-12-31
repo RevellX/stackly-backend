@@ -9,9 +9,12 @@ var connectionString = builder.Configuration.GetConnectionString("ApplicationDbC
 
 builder.Services.AddDbContext<AppDbContext>();
 builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>();
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddSession();
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
@@ -26,8 +29,8 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+app.UseSession();
 app.UseRouting();
-
 
 app.UseAuthorization();
 

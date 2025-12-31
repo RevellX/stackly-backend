@@ -6,6 +6,7 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<Example> Examples { get; set; }
     public DbSet<User> AppUsers { get; set; }
     public DbSet<Item> Items { get; set; }
+    public DbSet<ItemFile> ItemFiles { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Group> Groups { get; set; }
 
@@ -25,10 +26,16 @@ public class AppDbContext : IdentityDbContext<User>
     // The following configures EF to create a Sqlite database file in the
     // special "local" folder for your platform.
     protected override void OnConfiguring(DbContextOptionsBuilder options)
-        => options.UseSqlite($"Data Source={DbPath}").LogTo(Console.WriteLine, LogLevel.Information);
+        => options.UseSqlite($"Data Source={DbPath}");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Group>()
+         .HasOne(g => g.Owner)                // Group has one Owner
+         .WithMany(u => u.OwnedGroups)        // User owns many Groups
+         .HasForeignKey(g => g.OwnerId)       // FK property
+         .OnDelete(DeleteBehavior.Restrict);  // Prevent cascade delete
     }
 }

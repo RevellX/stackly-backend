@@ -24,3 +24,24 @@
     </div>
     <button type="submit">Edit</button>
 </form>
+<form action="/group/addUser" method="post">
+    <div>
+        <label for="AddUserEmail">AddUserEmail</label>
+        <input type="hidden" name="GroupId" value="@Model!.Id" />
+        <input type="text" id="AddUserEmail" Name="AddUserEmail"/>
+        <button type="submit">Add</button>
+    </div>
+</form>
+    <ul>Users in group:
+    @foreach (User user in Model?.Users.ToArray() ?? Array.Empty<StacklyBackend.Models.User>())
+    {
+        <li>
+        <span>@user.Email</span>
+        <form action="/group/removeUser" method="post">
+            <input type="hidden" name="GroupId" value="@Model!.Id" />
+            <input type="hidden" id="RemoveUserEmail" name="RemoveUserEmail" value="@user.Email"/>
+            <button type="submit"><i class="fa-solid fa-trash"></i></button>
+        </form>
+        </li>
+    }
+    </ul>

@@ -5,6 +5,8 @@
     ViewData["Title"] = "Create";
 }
 <h2>Item - @ViewData["Title"]</h2>
+<p>Selected group:</p>
+@await Component.InvokeAsync("GroupDropdown")
 <a href="/item"><button type="button" aria-label="Go back">Go to list</button></a>
 <p>Item form: </p>
 
@@ -15,7 +17,7 @@
     </div>
 }
 
-<form action="/item/create" method="post">
+<form action="/item/create" method="post" enctype="multipart/form-data">
     @Html.AntiForgeryToken()
     <div>
         <label for="Name">Name</label>
@@ -31,13 +33,19 @@
     </div>
     <div>
         <label for="CategoryId">Category</label>
-        <select name="CategoryId" id="CategoryId" value="@Model?.CategoryId">
-        <option value="">Brak kategorii</option>
+        <select name="CategoryId" id="CategoryId">
+        <option disabled selected>-- Wybierz kategorię --</option>
             @foreach (var cat in (ViewData["categories"] as IEnumerable<StacklyBackend.Models.Category>) ?? Array.Empty<StacklyBackend.Models.Category>())
             {
-                <option value="@cat.Id">@cat.Name</option>
+                <option selected='@(Model?.CategoryId == cat.Id ? "selected" : null)' value="@cat.Id">@cat.Name</option>
             }
         </select>
     </div>
+    <input 
+        type="file" 
+        name="Files"
+        accept=".jpg, .jpeg, .png"
+        multiple
+    />
     <button type="submit">Create</button>
 </form>

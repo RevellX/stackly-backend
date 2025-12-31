@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -9,9 +10,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace stackly.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251215185445_ItemCategory_made_required")]
+    partial class ItemCategory_made_required
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.10");
@@ -29,34 +32,6 @@ namespace stackly.Migrations
                     b.HasIndex("UsersId");
 
                     b.ToTable("GroupUser");
-                });
-
-            modelBuilder.Entity("ItemFile", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ItemId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("OriginalFileName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("StoredFileName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ItemId");
-
-                    b.ToTable("ItemFiles");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -354,17 +329,6 @@ namespace stackly.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ItemFile", b =>
-                {
-                    b.HasOne("StacklyBackend.Models.Item", "Item")
-                        .WithMany("Files")
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Item");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -452,11 +416,6 @@ namespace stackly.Migrations
             modelBuilder.Entity("StacklyBackend.Models.Group", b =>
                 {
                     b.Navigation("Categories");
-                });
-
-            modelBuilder.Entity("StacklyBackend.Models.Item", b =>
-                {
-                    b.Navigation("Files");
                 });
 
             modelBuilder.Entity("StacklyBackend.Models.User", b =>
