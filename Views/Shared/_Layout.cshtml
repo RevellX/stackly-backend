@@ -34,6 +34,7 @@
                         produktów</a></li>
                 <li><a asp-area="" asp-controller="Category" asp-action="Index" class="nav-link"> <span class="icon"><i class="fa-solid fa-icons"></i></span>Kategorie</a></li>
                 <li><a asp-area="" asp-controller="Group" asp-action="Index" class="nav-link"> <span class="icon"><i class="fa-solid fa-layer-group"></i></span>Grupy</a></li>
+                <li><partial name="_LoginPartial" /></li>
             </ul>
         </div>
 
@@ -55,6 +56,10 @@
     <a asp-area="" asp-controller="Category" asp-action="Index" class="mobile-nav-link">
         <i class="fa-solid fa-icons"></i>
         Kategorie
+    </a>
+        <a asp-area="" asp-controller="Group" asp-action="Index" class="mobile-nav-link">
+        <i class="fa-solid fa-layer-group"></i>
+        Grupy
     </a>
 </nav>
 
