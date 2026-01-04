@@ -50,7 +50,6 @@ public class ItemController : Controller
                     EF.Functions.Like(i.Name, search)
                     || (i.Description != null && EF.Functions.Like(i.Description, search))
                     // || EF.Functions.Like(i.Id, search)
-                // || EF.Functions.Like(i.Category!.Name, search)
             );
 
         // Category filter

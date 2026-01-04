@@ -1,7 +1,7 @@
 @model StacklyBackend.Models.ItemCreate
 @using Microsoft.CodeAnalysis.Differencing
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Create Item";
     bool isGroupSelected = ViewBag.IsGroupSelected as bool? ?? false;
 }
 
@@ -14,7 +14,7 @@
         <i class="fa-solid fa-chevron-left"></i>
     </a>
     
-    <h2>Item - @ViewData["Title"]</h2>
+    <h2>@ViewData["Title"]</h2>
 </div>
 
 <div class="info-section">

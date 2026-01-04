@@ -29,11 +29,38 @@
         <div class="nav-items">
             <ul class="nav-links">
 
-                <li><a asp-area="" asp-controller="Item" asp-action="Create" class="nav-link"> <span class="icon"><i class="fa-solid fa-cart-plus"></i></span>Dodaj Produkt</a></li>
-                <li><a asp-area="" asp-controller="Item" asp-action="Index" class="nav-link"> <span class="icon"><i class="fa-solid fa-barcode"></i></span>Lista
-                    produktów</a></li>
-                <li><a asp-area="" asp-controller="Category" asp-action="Index" class="nav-link"> <span class="icon"><i class="fa-solid fa-icons"></i></span>Kategorie</a></li>
-                <li><a asp-area="" asp-controller="Group" asp-action="Index" class="nav-link"> <span class="icon"><i class="fa-solid fa-layer-group"></i></span>Grupy</a></li>
+                <li>
+                    <a asp-area="" asp-controller="Item" asp-action="Create" class="nav-link">
+                        <span class="icon">
+                            <i class="fa-solid fa-cart-plus"></i>
+                        </span>
+                        Add Item
+                    </a>
+                </li>
+                <li>
+                    <a asp-area="" asp-controller="Item" asp-action="Index" class="nav-link">
+                        <span class="icon">
+                            <i class="fa-solid fa-barcode"></i>
+                        </span>
+                        Inventory
+                    </a>
+                </li>
+                <li>
+                    <a asp-area="" asp-controller="Category" asp-action="Index" class="nav-link">
+                        <span class="icon">
+                            <i class="fa-solid fa-icons"></i>
+                        </span>
+                        Categories
+                    </a>
+                </li>
+                <li>
+                    <a asp-area="" asp-controller="Group" asp-action="Index" class="nav-link">
+                        <span class="icon">
+                            <i class="fa-solid fa-layer-group"></i>
+                        </span>
+                        Groups
+                    </a>
+                </li>
             </ul>
             <partial name="_LoginPartial"/>
         </div>
