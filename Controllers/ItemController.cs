@@ -135,6 +135,61 @@ public class ItemController : Controller
                 _context.SaveChanges();
                 return RedirectToAction("Index");
             }
+            _context.Items.Add(new Item
+            {
+                Id = id,
+                Name = item.Name,
+                Description = item.Description,
+                Quantity = item.Quantity,
+                CategoryId = item.CategoryId
+            });
+
+            if (item.Files is not null && item.Files.Count > 0)
+            {
+                const long MaxFileSize = 10 * 1024 * 1024; // 10 MB
+                var uploadsPath = Path.Combine(
+                        AppContext.BaseDirectory,
+                        "Uploads",
+                        "items",
+                        id
+                );
+                Directory.CreateDirectory(uploadsPath);
+
+                foreach (var file in item.Files)
+                {
+                    if (file.Length > MaxFileSize)
+                    {
+                        return BadRequest($"File ${file.FileName} too large. Maximum allowed size is 10 MB.");
+                    }
+                    string newId;
+                    do
+                    {
+                        newId = Generator.GetRandomString(StringType.Alphanumeric, StringCase.Lowercase, 10);
+                    } while (_context.ItemFiles.Any(p => p.Id.Equals(newId)));
+
+                    var storedFileName = $"{newId}{Path.GetExtension(file.FileName)}";
+                    var filePath = Path.Combine(uploadsPath, storedFileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+
+                    var dbFile = new ItemFile
+                    {
+                        Id = newId,
+                        ItemId = id,
+                        OriginalFileName = file.FileName,
+                        StoredFileName = storedFileName,
+                        ContentType = file.ContentType
+                    };
+
+                    _context.ItemFiles.Add(dbFile);
+                }
+            }
+
+            _context.SaveChanges();
+            return RedirectToAction("Index");
         }
 
         // Jeśli błąd
@@ -145,6 +200,19 @@ public class ItemController : Controller
 
         ViewData["categories"] = new SelectList(categoriesList, "Id", "Name", item.CategoryId);
         // ViewData["error"] = "There has been an error while creating new item";
+        ViewData["categories"] = _context.Categories.ToList();
+        ViewData["error"] = "There has been an error while creating new item";
+        foreach (var state in ModelState)
+        {
+            // Console.WriteLine($"{state.Key}: {state.Value.ValidationState} {state.Value.Errors}");
+            if (state.Key == "Files")
+            {
+                foreach (var erros in state.Value.Errors)
+                {
+                    Console.WriteLine($"{erros.ErrorMessage}");
+                }
+            }
+        }
         return View(item);
     }
 
@@ -177,16 +245,14 @@ public class ItemController : Controller
     // POST: Item/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public ActionResult Edit(string id, [Bind(include: "Name,Description,Quantity,CategoryId")] ItemEdit item)
+    public async Task<IActionResult> Edit(string id, [Bind(include: "Name,Description,Quantity,CategoryId,Files")] ItemEdit item)
     {
         if (ModelState.IsValid)
         {
-
             var userId = _userManager.GetUserId(User);
             var dbitem = Item.GetItemById(_context, id, userId!);
             if (dbitem is null)
                 return NotFound();
-
 
             if (!string.IsNullOrEmpty(item.Name))
                 dbitem.Name = item.Name;
@@ -200,6 +266,51 @@ public class ItemController : Controller
                     return NotFound();
                 dbitem.CategoryId = item.CategoryId;
             }
+
+            if (item.Files is not null && item.Files.Count > 0)
+            {
+                const long MaxFileSize = 10 * 1024 * 1024; // 10 MB
+                var uploadsPath = Path.Combine(
+                        AppContext.BaseDirectory,
+                        "Uploads",
+                        "items",
+                        id
+                );
+                Directory.CreateDirectory(uploadsPath);
+
+                foreach (var file in item.Files)
+                {
+                    if (file.Length > MaxFileSize)
+                    {
+                        return BadRequest($"File ${file.FileName} too large. Maximum allowed size is 10 MB.");
+                    }
+                    string newId;
+                    do
+                    {
+                        newId = Generator.GetRandomString(StringType.Alphanumeric, StringCase.Lowercase, 10);
+                    } while (_context.ItemFiles.Any(p => p.Id.Equals(newId)));
+
+                    var storedFileName = $"{newId}{Path.GetExtension(file.FileName)}";
+                    var filePath = Path.Combine(uploadsPath, storedFileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+
+                    var dbFile = new ItemFile
+                    {
+                        Id = newId,
+                        ItemId = id,
+                        OriginalFileName = file.FileName,
+                        StoredFileName = storedFileName,
+                        ContentType = file.ContentType
+                    };
+
+                    _context.ItemFiles.Add(dbFile);
+                }
+            }
+
             _context.SaveChanges();
             return RedirectToAction("Index");
         }
@@ -233,63 +344,31 @@ public class ItemController : Controller
         var item = Item.GetItemById(_context, id, userId!);
         if (item is null)
             return NotFound();
+        foreach (var file in item.Files)
+        {
+            var filePath = Path.Combine(
+                AppContext.BaseDirectory,
+                "Uploads",
+                "items",
+                file.ItemId,
+                file.StoredFileName
+            );
+            if (System.IO.File.Exists(filePath))
+            {
+                try
+                {
+                    System.IO.File.Delete(filePath);
+                }
+                catch
+                {
+                    // ignore failure to delete file
+                }
+            }
+            _context.ItemFiles.Remove(file);
+        }
         _context.Items.Remove(item);
         _context.SaveChanges();
         return RedirectToAction("Index");
-    }
-    [HttpPost]
-    [Authorize]
-    public async Task<IActionResult> Upload(string itemId, IFormFile file)
-    {
-        var userId = _userManager.GetUserId(User);
-        var dbitem = Item.GetItemById(_context, itemId, userId!);
-        if (dbitem is null)
-            return NotFound();
-        if (file == null || file.Length == 0)
-            return BadRequest("File missing");
-
-        const long MaxFileSize = 10 * 1024 * 1024; // 10 MB
-        if (file.Length > MaxFileSize)
-        {
-            return BadRequest("File too large. Maximum allowed size is 10 MB.");
-        }
-
-        var uploadsPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "Uploads",
-            "items",
-            itemId.ToString()
-        );
-
-        Directory.CreateDirectory(uploadsPath);
-
-        string newId;
-        do
-        {
-            newId = Generator.GetRandomString(StringType.Alphanumeric, StringCase.Lowercase, 10);
-        } while (_context.Items.FirstOrDefault(p => p.Id.Equals(newId)) is not null);
-
-        var storedFileName = $"{newId}{Path.GetExtension(file.FileName)}";
-        var filePath = Path.Combine(uploadsPath, storedFileName);
-
-        using (var stream = new FileStream(filePath, FileMode.Create))
-        {
-            await file.CopyToAsync(stream);
-        }
-
-        var dbFile = new ItemFile
-        {
-            Id = newId,
-            ItemId = itemId,
-            OriginalFileName = file.FileName,
-            StoredFileName = storedFileName,
-            ContentType = file.ContentType
-        };
-
-        _context.ItemFiles.Add(dbFile);
-        await _context.SaveChangesAsync();
-
-        return Redirect(Request.Headers.Referer.ToString());
     }
 
     [Authorize]
@@ -351,6 +430,25 @@ public class ItemController : Controller
         if (file == null)
             return NotFound();
 
+        var filePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "Uploads",
+            "items",
+            file.ItemId,
+            file.StoredFileName
+        );
+
+        if (System.IO.File.Exists(filePath))
+        {
+            try
+            {
+                System.IO.File.Delete(filePath);
+            }
+            catch
+            {
+                // ignore failure to delete file
+            }
+        }
         _context.ItemFiles.Remove(file);
         _context.SaveChanges();
         return Redirect(Request.Headers.Referer.ToString());
