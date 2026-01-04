@@ -22,11 +22,46 @@ public class CategoryController : Controller
 
     [Authorize]
     // GET: Category
-    public ActionResult Index()
+    public async Task<IActionResult> Index()
     {
         var userId = _userManager.GetUserId(User);
-        var selectedId = HttpContext.Session.GetString("SelectedGroupId") ?? "";
-        return View(Category.GetCategoriesByGroupId(_context, selectedId, userId!));
+        var selectedId = HttpContext.Session.GetString("SelectedGroupId");
+        
+        bool hasGroup = !string.IsNullOrEmpty(selectedId);
+        ViewBag.IsGroupSelected = hasGroup;
+
+        if (!hasGroup)
+        {
+            return View(new List<Category>());
+        }
+
+        var categories = await _context.Categories
+            .Where(c => c.GroupId == selectedId)
+            .Include(c => c.Group)
+            .ToListAsync();
+        ;
+        
+        var countsDict = await _context.Items
+            .Where(i => i.Category.GroupId == selectedId)
+            .GroupBy(i => i.CategoryId)
+            .Select(g => new { Id = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.Id, x => x.Count); 
+        
+        foreach (var cat in categories)
+        {
+            if (cat.Id != null && countsDict.ContainsKey(cat.Id))
+            {
+                cat.DisplayCount = countsDict[cat.Id];
+            }
+            else
+            {
+                cat.DisplayCount = 0;
+            }
+        }
+
+        return View(categories);
+
+        // return View(Category.GetCategoriesByGroupId(_context, selectedId, userId!));
     }
 
     // GET: Category/Details/5
@@ -45,6 +80,10 @@ public class CategoryController : Controller
     {
         var userId = _userManager.GetUserId(User);
         var selectedId = HttpContext.Session.GetString("SelectedGroupId") ?? "";
+        if (string.IsNullOrEmpty(selectedId))
+        {
+            return RedirectToAction("Index");
+        }
         ViewData["groups"] = Group.GetGroupsForUser(_context, userId!);
         return View(new CategoryCreate { GroupId = selectedId });
     }
@@ -138,20 +177,21 @@ public class CategoryController : Controller
         return View(categoryEdit);
     }
 
+    // Bo mamy modal do usuwania
     // GET: Category/Delete/5
-    public ActionResult Delete(string id)
-    {
-        var userId = _userManager.GetUserId(User);
-
-        if (id is null)
-            return BadRequest();
-
-        var category = Category.GetCategoryById(_context, id, userId!);
-        if (category == null)
-            return NotFound();
-
-        return View(category);
-    }
+    // public ActionResult Delete(string id)
+    // {
+    //     var userId = _userManager.GetUserId(User);
+    //
+    //     if (id is null)
+    //         return BadRequest();
+    //
+    //     var category = Category.GetCategoryById(_context, id, userId!);
+    //     if (category == null)
+    //         return NotFound();
+    //
+    //     return View(category);
+    // }
 
     // POST: Category/Delete/5
     [HttpPost, ActionName("Delete")]

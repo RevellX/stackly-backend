@@ -137,7 +137,6 @@
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
-@await RenderSectionAsync("Scripts", required: false)
 
 <script>
     
@@ -153,11 +152,7 @@
 
 
 
-    function confirmDelete(id, name) {
-        document.getElementById('deleteItemName').innerText = name;
-        document.getElementById('deleteForm').action = '/Item/Delete/' + id;
-        document.getElementById('deleteModal').style.display = 'flex';
-    }
+
 
     function closeDeleteModal() {
         document.getElementById('deleteModal').style.display = 'none';
@@ -168,11 +163,8 @@
             closeDeleteModal();
         }
     }
-    function confirmDeletePhoto(fileId) {
-        document.getElementById('deleteItemName').innerText = 'this photo';
-        document.getElementById('deleteForm').action = '/Item/RemoveUpload?fileId=' + fileId;
-        document.getElementById('deleteModal').style.display = 'flex';
-    }
+
 </script>
 @await RenderSectionAsync("Scripts", required: false)
+@* @await RenderSectionAsync("styles", required: false) *@
 </html>

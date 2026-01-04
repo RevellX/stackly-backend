@@ -5,6 +5,7 @@
     padding: 0.5rem 0;
 }
 
+
 .search-filter-form {
     display: flex;
     gap: 1rem;
@@ -419,4 +420,123 @@
 
 .btn-remove-file:hover {
     background: var(--error-red);
+}
+
+
+
+/* --- STYLIZACJA SAMEJ TABELI --- */
+
+.table-container {
+    background-color: var(--sidebar-light);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+    overflow-x: auto;
+    margin-top: 1rem;
+}
+
+.stackly-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+.stackly-table th {
+    background-color: var(--background-light);
+    text-align: left;
+    padding: 1rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: var(--text-gray);
+    border-bottom: 1px solid var(--border-light);
+    white-space: nowrap;
+}
+
+.stackly-table td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border-light);
+    color: var(--text-dark);
+    font-size: 0.95rem;
+}
+
+.stackly-table tr:last-child td {
+    border-bottom: none;
+}
+
+.stackly-table tr:hover {
+    background-color: var(--background-light);
+}
+
+.col-id {
+    width: auto;
+    color: var(--text-gray);
+}
+
+
+.cell-id-mono {
+    font-family: monospace;
+    font-size: 0.85em;
+    background: var(--background-light);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border-light);
+    color: var(--text-dark);
+}
+
+.cell-name-bold {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.group-badge {
+    display: inline-block;
+    background-color: var(--secondary-blue);
+    color: var(--primary-blue);
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.count-pill {
+    display: inline-block;
+    padding: 2px 8px;
+    background-color: #f3f4f6;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    min-width: 24px;
+}
+
+.count-pill.empty {
+    background-color: transparent;
+    color: var(--text-gray);
+}
+
+.col-actions {
+    width: 140px;
+    text-align: right;
+}
+
+.table-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.table-actions .btn-card-action {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--border-light);
+    background-color: var(--sidebar-light);
+}
+
+.table-actions .btn-card-action:hover {
+    background-color: var(--secondary-blue);
+    border-color: var(--secondary-blue);
 }

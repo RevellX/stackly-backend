@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace StacklyBackend.Models;
 
@@ -10,6 +11,9 @@ public class Category
     public string Name { get; set; } = string.Empty;
     public string GroupId { get; set; } = string.Empty;
     public Group Group { get; set; } = null!;
+    
+    [NotMapped]
+    public int DisplayCount { get; set; }
 
     public static Category? GetCategoryById(AppDbContext _context, string categoryId, string userId)
     {

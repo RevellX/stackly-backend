@@ -77,7 +77,13 @@
 </div>
 
 
-
+<script>
+    function confirmDeletePhoto(fileId) {
+        document.getElementById('deleteItemName').innerText = 'this photo';
+        document.getElementById('deleteForm').action = '/Item/RemoveUpload?fileId=' + fileId;
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
+</script>
 
 
 

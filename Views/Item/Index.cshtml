@@ -133,7 +133,13 @@ else
     </div>
 }
 
-
+<script>
+    function confirmDelete(id, name) {
+        document.getElementById('deleteItemName').innerText = name;
+        document.getElementById('deleteForm').action = '/Item/Delete/' + id;
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
+</script>
 @* *@
 @* *@
 @* *@

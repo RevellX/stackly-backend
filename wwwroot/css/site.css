@@ -608,8 +608,30 @@ footer {
     color: var(--status-warning);
 }
 
+.text-center {
+    text-align: center;
+}
 
 
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--primary-blue);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+    border: none;
+    transition: 0.2s ease all;
+}
+
+.btn-primary:hover {
+    filter: brightness(0.85);
+}
 /* Item details */
 /*.details-container {*/
 /*    margin-top: 1rem;*/
