@@ -1,19 +1,85 @@
-@model StacklyBackend.Models.Item;
+@model StacklyBackend.Models.Item
 
 @{
     ViewData["Title"] = "Details";
 }
 
-<h2>Item - @ViewData["Title"]</h2>
-@* <p>Item details: </p> *@
+@section Styles {
+    <link rel="stylesheet" href="~/css/tables.css" />
+}
+
+<div class="entry-section">
+    <a href="@Url.Action("Index")" class="btn-back" aria-label="Go back">
+        <i class="fa-solid fa-chevron-left"></i>
+    </a>
+    
+    <h2>Details - @Model.Name</h2>
+</div>
 
 
-<div class="details-container">
-    <ul>
-        <li>Product ID: <b>@Model.Id</b></li>
-        <li>Product Name: <b>@Model.Name</b></li>
-        <li>Product Description: <b>@Model.Description</b></li>
-        <li>Product Quantity: <b>@Model.Quantity</b></li>
-    </ul>
+<div class="item-card details-mode">
+    <div class="item-card__image">
+        @if (Model.Files != null && Model.Files.Any())
+        {
+            var cover = Model.Files.First();
+            <img
+                src="@Url.Action("Preview","Item", new {fileId = cover.Id})"
+                alt="@Model.Name"
+                class="item-card__real-img"
+            />
+            @if (Model.Files.Count > 1)
+            {
+                <span class="gallery-badge">
+                    <i class="fa-regular fa-images"></i>
+                    +@(Model.Files.Count - 1)
+                </span>
+            }
+        }
+        else
+        {
+            <div class="placeholder-img">
+                <i class="fa-solid fa-cube"></i>
+            </div>
+        }
+        <span class="card-badge">@Model.Category?.Name</span>
+    </div>
+    <div class="item-card__content">
+        <div class="item-header">
+            <div class="header-left">
+                <small class="details-id">#@Model.Id</small>
+                <h1>@Model.Name</h1>
+            </div>
+            <span class="quantity-tag @(Model.Quantity < 5 ? "low-stock" : "")">
+                Stock: <strong>@Model.Quantity</strong>
+            </span>
+        </div>
+
+        <div class="details-divider"></div>
+        
+        <div class="item-desc">
+            <label class="details-label">Description</label>
+            <p>
+                @(string.IsNullOrEmpty(Model.Description) ? "No description provided." : Model.Description)
+            </p>
+        </div>
+    </div>
+    
+    <div class="item-card__actions details-actions">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-details-action primary">
+            <i class="fa-solid fa-pen"></i> Edit Item
+        </a>
+        
+        <button type="button" class="btn-card-action delete" title="Delete" onclick="confirmDelete('@Model.Id','@Model.Name')">
+            <i class="fa-solid fa-trash"></i>
+        </button>
+    </div>
+    
+    
+    @* <ul> *@
+    @*     <li>Product ID: <b>@Model.Id</b></li> *@
+    @*     <li>Product Name: <b>@Model.Name</b></li> *@
+    @*     <li>Product Description: <b>@Model.Description</b></li> *@
+    @*     <li>Product Quantity: <b>@Model.Quantity</b></li> *@
+    @* </ul> *@
 
 </div>

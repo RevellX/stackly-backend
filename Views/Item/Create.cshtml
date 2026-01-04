@@ -50,6 +50,9 @@ else
         <form-select-builder for="CategoryId" items="@ViewBag.Categories" option-label="-- Select Category --">
             Category
         </form-select-builder>
+        <form-input-builder for="Files" type="file" multiple="true">
+            Photos <small style="color: var(--text-gray); font-weight: normal;">(Max 10MB)</small>
+        </form-input-builder>
         <form-submit-builder>
             Create Item
         </form-submit-builder>

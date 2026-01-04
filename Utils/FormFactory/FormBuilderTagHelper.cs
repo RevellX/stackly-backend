@@ -24,6 +24,7 @@ public class  FormBuilderTagHelper : TagHelper
     public string? Controller { get; set; }
     public string Method { get; set; } = "post";
     public string Klasa { get; set; } = "";
+    public string? Enctype {get; set;}
     
     
     public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
@@ -34,6 +35,16 @@ public class  FormBuilderTagHelper : TagHelper
             ? "stackly-form"
             : $"stackly-form {Klasa}";
         output.Attributes.SetAttribute("class", wrapperClass);
+
+        var htmlAttributes = new Dictionary<string, object>()
+        {
+            { "method", Method }
+        };
+
+        if (!string.IsNullOrWhiteSpace(Enctype))
+        {
+            htmlAttributes.Add("enctype", Enctype);
+        }
         
         var formTag = _htmlGenerator.GenerateForm(
             ViewContext,
@@ -41,7 +52,7 @@ public class  FormBuilderTagHelper : TagHelper
             Controller,
             fragment: null,
             routeValues: null,
-            htmlAttributes: new {method = Method},
+            htmlAttributes: htmlAttributes,
             method: Method
         );
 
@@ -61,7 +72,6 @@ public class  FormBuilderTagHelper : TagHelper
         }
         
         var error = ViewContext.ViewData["error"] as string; 
-
         if (!string.IsNullOrEmpty(error))
         {
             string errorHtml =

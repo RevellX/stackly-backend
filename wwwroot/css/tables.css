@@ -1,4 +1,3 @@
-/* --- TOOLBAR SECTION (W końcu stylowany!) --- */
 .toolbar-section {
     display: flex;
     align-items: center;
@@ -10,15 +9,14 @@
     display: flex;
     gap: 1rem;
     width: 100%;
-    flex-wrap: wrap; /* Żeby na telefonie spadało pod spód */
+    flex-wrap: wrap;
 }
 
-/* WYSZUKIWARKA */
 .search-box {
     position: relative;
     display: flex;
     align-items: center;
-    flex-grow: 1; /* Rozciągnij się na dostępną przestrzeń */
+    flex-grow: 1;
     max-width: 400px;
 }
 
@@ -27,12 +25,12 @@
     left: 12px;
     color: var(--text-gray);
     font-size: 0.9rem;
-    pointer-events: none; /* Żeby kliknięcie w ikonę aktywowało input */
+    pointer-events: none;
 }
 
 .stackly-input {
     width: 100%;
-    padding: 0.6rem 1rem 0.6rem 2.2rem; /* padding-left miejsce na ikonę */
+    padding: 0.6rem 1rem 0.6rem 2.2rem;
     background-color: var(--sidebar-light);
     border: 1px solid var(--border-light);
     border-radius: var(--border-radius);
@@ -48,7 +46,6 @@
     box-shadow: 0 0 0 3px rgba(66, 101, 240, 0.1);
 }
 
-/* SELECT (KATEGORIE) */
 .filter-box {
     min-width: 150px;
 }
@@ -65,9 +62,8 @@
     outline: none;
     transition: all 0.2s ease;
     box-shadow: var(--shadow-light);
-    appearance: none; /* Reset domyślnego wyglądu przeglądarki */
-
-    /* Customowa strzałka */
+    appearance: none;
+    
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
     background-repeat: no-repeat;
     background-position: right 0.7rem center;
@@ -77,9 +73,6 @@
 .stackly-select:focus {
     border-color: var(--primary-blue);
 }
-
-
-/* --- ITEMS GRID SYSTEM (To co działało) --- */
 
 .items-grid {
     display: grid;
@@ -107,11 +100,26 @@
 }
 
 /* ZDJĘCIE */
+
+.item-card__real-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.item-card:hover .item-card__real-img {
+    transform: scale(1.05);
+}
+
 .item-card__image {
     height: 160px;
     width: 100%;
     background-color: var(--background-light);
     position: relative;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -119,7 +127,7 @@
 }
 
 .placeholder-img {
-    color: var(--border-light); /* Jaśniejszy placeholder, mniej agresywny */
+    color: var(--border-light);
     font-size: 3rem;
 }
 
@@ -148,7 +156,7 @@
 .item-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start; /* Żeby długi tytuł nie rozjeżdżał badga */
+    align-items: flex-start;
     gap: 0.5rem;
 }
 
@@ -157,7 +165,6 @@
     font-size: 1.05rem;
     font-weight: 600;
     color: var(--text-dark);
-    /* Ucięcie tytułu */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -175,7 +182,7 @@
 }
 
 .quantity-tag.low-stock {
-    background-color: #fee2e2; /* Jasny czerwony */
+    background-color: #fee2e2;
     color: var(--error-red);
 }
 
@@ -195,7 +202,7 @@
 /* STOPKA (AKCJE) */
 .item-card__actions {
     padding: 0.5rem 1rem;
-    background-color: var(--background-light); /* Odróżnienie stopki */
+    background-color: var(--background-light);
     border-top: 1px solid var(--border-light);
     display: flex;
     justify-content: space-between;
@@ -212,6 +219,9 @@
     align-items: center;
     justify-content: center;
     text-decoration: none;
+    background: none;
+    border: none;
+    cursor: pointer;
 }
 
 .btn-card-action:hover {
@@ -236,4 +246,177 @@
     font-size: 3rem;
     margin-bottom: 1rem;
     color: var(--border-light);
+}
+
+/* --- DETAILS VIEW EXTENSIONS  --- */
+.item-card.details-mode {
+    max-width: 800px;
+    margin: 0 auto 2rem auto;
+    cursor: default;
+}
+
+.item-card.details-mode:hover {
+    transform: none;
+    box-shadow: var(--shadow-light);
+    border-color: var(--border-light);
+}
+
+.item-card.details-mode .item-card__image {
+    height: 400px;
+}
+
+.item-card.details-mode h1 {
+    margin: 0;
+    font-size: 2rem;
+    color: var(--text-dark);
+}
+
+.item-card.details-mode .details-id {
+    color: var(--text-gray);
+    font-family: monospace;
+    font-size: 0.9rem;
+    display: block;
+}
+
+.item-card.details-mode .quantity-tag {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+}
+
+
+.details-divider {
+    height: 1px;
+    background-color: var(--border-light);
+    margin: 1.5rem 0;
+}
+
+
+.item-card.details-mode .item-desc {
+    -webkit-line-clamp: unset;
+    font-size: 1rem;
+}
+
+.item-card.details-mode .item-desc p {
+    margin-top: 0.5rem;
+}
+
+.details-label {
+    font-weight: bold;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--text-gray);
+}
+
+.gallery-badge {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    backdrop-filter: blur(4px);
+}
+
+.details-actions {
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+}
+
+.btn-details-action {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.8rem;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-details-action.primary {
+    background-color: var(--secondary-blue);
+    color: var(--primary-blue);
+    border: 1px solid transparent;
+}
+.btn-details-action.primary:hover {
+    background-color: var(--primary-blue);
+    color: white;
+}
+
+.btn-details-action.danger {
+    background-color: transparent;
+    border: 1px solid var(--error-red);
+    color: var(--error-red);
+}
+.btn-details-action.danger:hover {
+    background-color: var(--error-red);
+    color: white;
+}
+
+@media (max-width: 600px) {
+    .item-card.details-mode .item-card__image {
+        height: 250px;
+    }
+    .details-actions {
+        flex-direction: column;
+    }
+}
+
+/* --- Edit --- */
+.existing-files-grid {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0;
+}
+
+.file-preview-item {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius);
+    overflow: hidden; 
+    background-color: #fff;
+    box-shadow: var(--shadow-light);
+}
+
+.file-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
+.btn-remove-file {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: rgba(220, 38, 38, 0.9);
+    color: white;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom-left-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-decoration: none;
+    z-index: 10;
+    transition: background 0.2s;
+    border: none;
+    outline: none;
+    padding: 0;
+}
+
+.btn-remove-file:hover {
+    background: var(--error-red);
 }

@@ -6,7 +6,7 @@
     <title>@ViewData["Title"] - stackly</title>
     @* <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" /> *@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    @* <link rel="stylesheet" href="~/stackly.styles.css" asp-append-version="true" /> *@
+    <link rel="stylesheet" href="~/css/modal.css" asp-append-version="true" />
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -107,6 +107,31 @@
 @*        &copy; 2025 - stackly - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a> *@
 @* </footer> *@
 
+@* Modal for delete confirmation  *@
+<div id="deleteModal" class="modal-overlay" style="display: none;">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>Confirm Deletion</h3>
+            <button type="button" class="btn-close-modal" onclick="closeDeleteModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+            
+        <div class="modal-body">
+            <p>Are you sure you want to delete <strong id="deleteItemName">this item</strong>?</p>
+            <p class="warning-text">This action cannot be undone.</p>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+                
+            <form id="deleteForm" method="post" action="">
+                @Html.AntiForgeryToken() <button type="submit" class="btn-confirm-delete">Yes, Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+
 
 </body>
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
@@ -125,5 +150,29 @@
             $('#mobile-account-menu').removeClass('open');
         });
     });
+
+
+
+    function confirmDelete(id, name) {
+        document.getElementById('deleteItemName').innerText = name;
+        document.getElementById('deleteForm').action = '/Item/Delete/' + id;
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+    }
+    window.onclick = function(event) {
+        var modal = document.getElementById('deleteModal');
+        if (event.target == modal) {
+            closeDeleteModal();
+        }
+    }
+    function confirmDeletePhoto(fileId) {
+        document.getElementById('deleteItemName').innerText = 'this photo';
+        document.getElementById('deleteForm').action = '/Item/RemoveUpload?fileId=' + fileId;
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
 </script>
+@await RenderSectionAsync("Scripts", required: false)
 </html>

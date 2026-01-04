@@ -16,16 +16,18 @@ public class FormInputBuilderTagHelper : TagHelper
         _generator = generator;
     }
 
-    [ViewContext] [HtmlAttributeNotBound] public ViewContext ViewContext { get; set; } = null!;
+    [ViewContext]
+    [HtmlAttributeNotBound]
+    public ViewContext ViewContext { get; set; } = null!;
 
     // Name, value, required
-    [HtmlAttributeName("for")] public ModelExpression For { get; set; } = null!;
-
+    [HtmlAttributeName("for")] 
+    public ModelExpression For { get; set; } = null!;
+    
     public string Type { get; set; } = "";
-
     public string? Klasa { get; set; }
-
     public string? Placeholder { get; set; }
+    public bool Multiple { get; set; } = false;
 
 
 
@@ -41,13 +43,11 @@ public class FormInputBuilderTagHelper : TagHelper
         output.Attributes.SetAttribute("class", wrapperClass);
 
         // Label
-        // pobieramy ze środka taga o ile istnieje, lub z modelu [Display]
         var child = await output.GetChildContentAsync();
         var labelContent = child.GetContent().Trim();
 
         if (string.IsNullOrWhiteSpace(labelContent))
         {
-            // Bierzemy nazwę z DisplayName ("Nazwa Produktu") lub nazwy właściwości ("Name")
             labelContent = For.Metadata.DisplayName ?? For.Metadata.PropertyName;
         }
 
@@ -59,25 +59,38 @@ public class FormInputBuilderTagHelper : TagHelper
         labelBuilder.Attributes.Add("for", TagBuilder.CreateSanitizedId(For.Name, "-"));
         labelBuilder.AddCssClass("stackly-form__label");
         labelBuilder.InnerHtml.AppendHtml(labelContent + requiredSpan);
-
+        
         // Input
-        //Generator sam ustawia value, name, id itp.
+
+        var inputAttributes = new Dictionary<string, object>
+        {
+            { "class", "stackly-form__input" },
+            { "placeholder", Placeholder ?? "" }
+        };
+        
+        if (!string.IsNullOrEmpty(Type))
+        {
+            inputAttributes.Add("type", Type);
+        }
+
+        if (Type == "file")
+        {
+            inputAttributes["class"] = "stackly-form__input file-input";
+            if (Multiple)
+            {
+                inputAttributes.Add("multiple", "multiple");
+            }
+        }
+        
         var inputBuilder = _generator.GenerateTextBox(
             ViewContext,
             For.ModelExplorer,
             For.Name,
-            value: null, // null bo wartość jest brana z modelu
+            value: For.Model,
             format: null,
-            htmlAttributes: new
-            {
-                @class = "stackly-form__input",
-                placeholder = Placeholder,
-                // jeśli podaliśmy type to go uywamy jak nie to domyślny
-                type = string.IsNullOrEmpty(Type) ? null : Type
-            }
+            htmlAttributes: inputAttributes
         );
-
-        // Validation message
+        
         var validationBuilder = _generator.GenerateValidationMessage(
             ViewContext,
             For.ModelExplorer,
@@ -86,8 +99,7 @@ public class FormInputBuilderTagHelper : TagHelper
             tag: "span",
             htmlAttributes: new { @class = "text-danger" }
         );
-
-        // Łączenie wszystkiego
+        
         output.Content.AppendHtml(labelBuilder);
         output.Content.AppendHtml(inputBuilder);
         output.Content.AppendHtml(validationBuilder);
