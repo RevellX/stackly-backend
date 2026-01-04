@@ -612,9 +612,12 @@ footer {
     text-align: center;
 }
 
-
 .btn-primary {
     display: inline-flex;
+}
+
+.btn-primary, #mobile-user-btn, .form-inline button {
+    /*display: inline-flex;*/
     align-items: center;
     gap: 8px;
     background-color: var(--primary-blue);
@@ -629,7 +632,7 @@ footer {
     transition: 0.2s ease all;
 }
 
-.btn-primary:hover {
+.btn-primary:hover, #mobile-user-btn:hover, .form-inline button:hover {
     filter: brightness(0.85);
 }
 /* Item details */

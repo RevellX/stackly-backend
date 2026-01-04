@@ -1,25 +1,44 @@
-@model StacklyBackend.Models.GroupCreate
-@using Microsoft.CodeAnalysis.Differencing
+@model StacklyBackend.Models.Group
 @{
+    ViewData["Title"] = "Create Group";
     var error = ViewData["Error"] as string;
-    ViewData["Title"] = "Create";
 }
-<h2>Group - @ViewData["Title"]</h2>
-<a href="/group"><button type="button" aria-label="Go back">Go to list</button></a>
-<p>Group form: </p>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/forms.css" />
+}
+
+<div class="entry-section">
+    <a href="/group" class="btn-back" aria-label="Go back">
+        <i class="fa-solid fa-chevron-left"></i>
+    </a>
+    <h2>@ViewData["Title"]</h2>
+</div>
 
 @if (!string.IsNullOrEmpty(error))
 {
-    <div role="alert" class="validation-summary-errors">
-        @error
+    <div class="alert-box">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <strong>Error:</strong> @error
     </div>
 }
 
-<form action="/group/create" method="post">
-    @Html.AntiForgeryToken()
-    <div>
-        <label for="Name">Name</label>
-        <input type="text" id="Name" name="Name" value="@Model?.Name"/>
-    </div>
-    <button type="submit">Create</button>
-</form>
+<div class="info-section">
+    <p>Create a new group to organize users. You can add members after creating the group.</p>
+</div>
+
+<div class="form-container">
+    <form-builder controller="Group" action="Create" method="post">
+        
+        <form-input-builder for="Name">
+            Group Name
+        </form-input-builder>
+        
+        <div class="form-actions">
+            <form-submit-builder>
+                Create Group
+            </form-submit-builder>
+        </div>
+
+    </form-builder>
+</div>

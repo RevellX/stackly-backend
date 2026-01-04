@@ -1,47 +1,115 @@
 @model StacklyBackend.Models.Group
-@using Microsoft.CodeAnalysis.Differencing
 @{
+    ViewData["Title"] = "Edit Group";
     var error = ViewData["Error"] as string;
-    ViewData["Title"] = "Edit";
 }
-<h2>Group - @ViewData["Title"]</h2>
-<a href="/group"><button type="button" aria-label="Go back">Go to list</button></a>
-<p>Item form: </p>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/forms.css" />
+    <link rel="stylesheet" href="~/css/tables.css" />
+}
+
+<div class="entry-section">
+    <a href="/group" class="btn-back" aria-label="Go back">
+        <i class="fa-solid fa-chevron-left"></i>
+    </a>
+    <h2>@ViewData["Title"] - @Model.Name</h2>
+</div>
 
 @if (!string.IsNullOrEmpty(error))
 {
-    <div role="alert" class="validation-summary-errors">
-        @error
+    <div class="alert-box">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <strong>Error:</strong> @error
     </div>
 }
 
-<form action="/group/edit/@Model.Id" method="post">
-    @Html.AntiForgeryToken()
-    <input type="hidden" id="Id" name="Id" value="@Model.Id" />
-    <div>
-        <label for="Name">Name</label>
-        <input type="text" id="Name" name="Name" value="@Model?.Name"/>
-    </div>
-    <button type="submit">Edit</button>
-</form>
-<form action="/group/addUser" method="post">
-    <div>
-        <label for="AddUserEmail">AddUserEmail</label>
-        <input type="hidden" name="GroupId" value="@Model!.Id" />
-        <input type="text" id="AddUserEmail" Name="AddUserEmail"/>
-        <button type="submit">Add</button>
-    </div>
-</form>
-    <ul>Users in group:
-    @foreach (User user in Model?.Users.ToArray() ?? Array.Empty<StacklyBackend.Models.User>())
+<div class="info-section">
+    <p>Change general group information.</p>
+</div>
+
+<div class="form-container">
+    <form-builder controller="Group" action="Edit" method="post">
+        <input type="hidden" name="Id" value="@Model.Id" />
+        <form-input-builder for="Name">Group Name</form-input-builder>
+        <div class="form-actions">
+            <form-submit-builder>Update Name</form-submit-builder>
+        </div>
+    </form-builder>
+</div>
+
+<div class="info-section">
+    <h3>Manage Members</h3>
+    <p>Add new users to this group by email.</p>
+</div>
+
+<div class="form-container">
+    <form action="/group/addUser" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="GroupId" value="@Model.Id" />
+        
+        <div class="stackly-form__field" style="margin-bottom: 0.5rem">
+            <label class="stackly-form__label" for="AddUserEmail">User Email</label>
+            <input type="text" 
+                   id="AddUserEmail" 
+                   name="AddUserEmail" 
+                   class="stackly-form__input" 
+                   placeholder="Enter user email..." 
+                   required />
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">
+                <i class="fa-solid fa-user-plus"></i> Add User
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="table-container">
+    @if (Model.Users == null || !Model.Users.Any())
     {
-        <li>
-        <span>@user.Email</span>
-        <form action="/group/removeUser" method="post">
-            <input type="hidden" name="GroupId" value="@Model!.Id" />
-            <input type="hidden" id="RemoveUserEmail" name="RemoveUserEmail" value="@user.Email"/>
-            <button type="submit"><i class="fa-solid fa-trash"></i></button>
-        </form>
-        </li>
+        <div class="empty-state">
+            <i class="fa-solid fa-users-slash"></i>
+            <p>No members in this group yet.</p>
+        </div>
     }
-    </ul>
+    else
+    {
+        <table class="stackly-table">
+            <thead>
+                <tr>
+                    <th>User Email</th>
+                    <th class="col-actions">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model.Users)
+                {
+                    <tr>
+                        <td class="cell-name-bold">
+                            @user.Email
+                        </td>
+                        <td class="col-actions">
+                            <button type="button" 
+                                    class="btn-card-action delete" 
+                                    title="Remove User"
+                                    onclick="confirmRemoveUser('@Model.Id', '@user.Email')">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<script>
+    function confirmRemoveUser(groupId, email) {
+        document.getElementById('deleteItemName').innerText = email;
+        var actionUrl = '/group/removeUser?GroupId=' + groupId + '&RemoveUserEmail=' + email;
+        document.getElementById('deleteForm').action = actionUrl;
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
+</script>
