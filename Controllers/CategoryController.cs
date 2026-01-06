@@ -27,7 +27,7 @@ public class CategoryController : Controller
         var userId = _userManager.GetUserId(User);
         var selectedId = HttpContext.Session.GetString("SelectedGroupId") ?? "";
         var categories = Category.GetCategoriesByGroupId(_context, selectedId!, userId!);
-        ViewBag.IsGroupSelected = categories.Count() == 0 ? false : true;
+        ViewBag.IsGroupSelected = selectedId == "" ? false : true;
         return View(categories);
 
         // return View(Category.GetCategoriesByGroupId(_context, selectedId, userId!));
