@@ -166,6 +166,33 @@ public class ItemController : Controller
 
                         _context.ItemFiles.Add(dbFile);
                     }
+
+                    var dbFile = new ItemFile
+                    {
+                        Id = newId,
+                        ItemId = id,
+                        OriginalFileName = file.FileName,
+                        StoredFileName = storedFileName,
+                        ContentType = file.ContentType
+                    };
+
+                    _context.ItemFiles.Add(dbFile);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Index");
+        }
+        ViewData["categories"] = _context.Categories.ToList();
+        ViewData["error"] = "There has been an error while creating new item";
+        foreach (var state in ModelState)
+        {
+            // Console.WriteLine($"{state.Key}: {state.Value.ValidationState} {state.Value.Errors}");
+            if (state.Key == "Files")
+            {
+                foreach (var erros in state.Value.Errors)
+                {
+                    Console.WriteLine($"{erros.ErrorMessage}");
                 }
                 
                 await _context.SaveChangesAsync();

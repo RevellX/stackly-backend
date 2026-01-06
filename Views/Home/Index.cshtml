@@ -2,7 +2,32 @@
     ViewData["Title"] = "Home Page";
 }
 
-@* <div class="text-center"> *@
-@*     <h1 class="display-4">Welcome</h1> *@
-@*     <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p> *@
-@* </div> *@
+<div class="dashboard-container">
+    <header class="dashboard-header">
+        <h1>Welcome to Stackly</h1>
+        <p>Manage your assets and collaborate with your team</p>
+    </header>
+
+    <div class="tiles-grid">
+        <div class="tile">
+            <div class="tile-icon">👥</div>
+            <h3>Groups & Teams</h3>
+            <p>Create shared workspaces and invite other users by entering their <b>email address</b> to collaborate.</p>
+            <a href="/Group" class="tile-link">Manage Groups</a>
+        </div>
+
+        <div class="tile">
+            <div class="tile-icon">📁</div>
+            <h3>Categories</h3>
+            <p>Organize your items into logical collections within your groups for better structure.</p>
+            <a href="/Category" class="tile-link">View Categories</a>
+        </div>
+
+        <div class="tile">
+            <div class="tile-icon">📦</div>
+            <h3>New Item</h3>
+            <p>Add new assets with <b>names, descriptions, quantities, and photos</b> to your database.</p>
+            <a href="/Item/Create" class="tile-link">Add Now</a>
+        </div>
+    </div>
+</div>
