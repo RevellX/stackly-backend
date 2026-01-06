@@ -63,7 +63,7 @@ public class GroupController : Controller
                 OwnerId = _userManager.GetUserId(User)!
             });
             _context.SaveChanges();
-            return RedirectToAction("Index");
+            return RedirectToAction("Edit", new { id = id });
         }
         ViewData["error"] = "There has been an error while creating new group";
         return View(group);

@@ -1,0 +1,64 @@
+.stackly-form {
+    padding: 1.5rem;
+    border: 1px solid var(--primary-blue);
+    border-radius: var(--border-radius);
+    background-color: var(--secondary-blue); /* Tło z Twojej palety */
+    box-shadow: var(--shadow-light);
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    color: var(--text-dark);
+}
+
+.stackly-form__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.stackly-form__label {
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 0.9rem;
+}
+
+.stackly-form__input,
+.stackly-form__select {
+    border: none;
+    border-bottom: 1px dashed var(--text-gray);
+    background-color: transparent;
+    padding: 0.5rem 0;
+    width: 100%;
+    outline: none;
+    color: var(--text-dark);
+    transition: border-color 0.2s;
+}
+
+.stackly-form__input:focus,
+.stackly-form__select:focus {
+    border-bottom: 1px solid var(--primary-blue);
+}
+
+.stackly-form__select {
+    cursor: pointer;
+}
+
+.stackly-form__submit {
+    margin-top: 1rem;
+    border: 1px solid var(--primary-blue);
+    border-radius: var(--border-radius);
+    color: var(--primary-blue);
+    background-color: transparent; /* Ewentualnie --sidebar-light jeśli chcesz wypełnienie */
+    padding: 0.5rem 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s ease all;
+}
+
+.stackly-form__submit:hover {
+    background-color: var(--primary-blue);
+    color: var(--text-white);
+}
+

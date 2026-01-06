@@ -29,9 +29,19 @@ public class Item
 
     public static Item? GetItemById(AppDbContext _context, string itemId, string userId)
     {
-        return _context.Items.Include(i => i.Files).FirstOrDefault(i =>
-            i.Id == itemId &&
-            (i.Category.Group.OwnerId == userId || i.Category.Group.Users.Any(u => u.Id == userId)));
+        // return _context.Items.Include(i => i.Files).FirstOrDefault(i =>
+        //     i.Id == itemId &&
+        //     (i.Category.Group.OwnerId == userId || i.Category.Group.Users.Any(u => u.Id == userId)));
+        return _context.Items
+            .Include(i => i.Category)
+            .Include(i => i.Files)
+            .FirstOrDefault(i =>
+                i.Id == itemId &&
+                (
+                    i.Category.Group.OwnerId == userId ||
+                    i.Category.Group.Users.Any(u => u.Id == userId)
+                )
+            );
     }
 
 

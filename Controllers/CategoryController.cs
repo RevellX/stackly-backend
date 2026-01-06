@@ -22,11 +22,15 @@ public class CategoryController : Controller
 
     [Authorize]
     // GET: Category
-    public ActionResult Index()
+    public async Task<IActionResult> Index()
     {
         var userId = _userManager.GetUserId(User);
         var selectedId = HttpContext.Session.GetString("SelectedGroupId") ?? "";
-        return View(Category.GetCategoriesByGroupId(_context, selectedId, userId!));
+        var categories = Category.GetCategoriesByGroupId(_context, selectedId!, userId!);
+        ViewBag.IsGroupSelected = selectedId == "" ? false : true;
+        return View(categories);
+
+        // return View(Category.GetCategoriesByGroupId(_context, selectedId, userId!));
     }
 
     // GET: Category/Details/5
@@ -45,6 +49,10 @@ public class CategoryController : Controller
     {
         var userId = _userManager.GetUserId(User);
         var selectedId = HttpContext.Session.GetString("SelectedGroupId") ?? "";
+        if (string.IsNullOrEmpty(selectedId))
+        {
+            return RedirectToAction("Index");
+        }
         ViewData["groups"] = Group.GetGroupsForUser(_context, userId!);
         return View(new CategoryCreate { GroupId = selectedId });
     }
@@ -138,20 +146,21 @@ public class CategoryController : Controller
         return View(categoryEdit);
     }
 
+    // Bo mamy modal do usuwania
     // GET: Category/Delete/5
-    public ActionResult Delete(string id)
-    {
-        var userId = _userManager.GetUserId(User);
-
-        if (id is null)
-            return BadRequest();
-
-        var category = Category.GetCategoryById(_context, id, userId!);
-        if (category == null)
-            return NotFound();
-
-        return View(category);
-    }
+    // public ActionResult Delete(string id)
+    // {
+    //     var userId = _userManager.GetUserId(User);
+    //
+    //     if (id is null)
+    //         return BadRequest();
+    //
+    //     var category = Category.GetCategoryById(_context, id, userId!);
+    //     if (category == null)
+    //         return NotFound();
+    //
+    //     return View(category);
+    // }
 
     // POST: Category/Delete/5
     [HttpPost, ActionName("Delete")]
