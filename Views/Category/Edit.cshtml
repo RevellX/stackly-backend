@@ -1,35 +1,54 @@
 @model StacklyBackend.Models.Category
-@using Microsoft.CodeAnalysis.Differencing
+
 @{
-    var error = ViewData["Error"] as string;
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit Category";
+    
+    // BEZLITOSNA PRAWDA O DANYCH:
+    // W ItemController masz gotowy obiekt SelectList w ViewData.
+    // Tutaj masz surową listę obiektów Group. Musisz to zamienić na SelectList tutaj,
+    // bo inaczej 'form-select-builder' dostanie nulla i nic nie wyświetli.
+    var rawGroups = ViewData["groups"] as IEnumerable<StacklyBackend.Models.Group> 
+                    ?? Enumerable.Empty<StacklyBackend.Models.Group>();
+                    
+    // Tworzymy SelectList ręcznie: (źródło, pole wartości, pole tekstu, wybrana wartość)
+    var groupSelectList = new SelectList(rawGroups, "Id", "Name", Model.GroupId);
 }
-<h2>Category - @ViewData["Title"]</h2>
-<a href="/category"><button aria-label="Go back">Go to list</button></a>
-<p>Category form: </p>
 
-@if (!string.IsNullOrEmpty(error))
-{
-    <div role="alert" class="validation-summary-errors">
-        @error
-    </div>
+@section Styles {
+    <link rel="stylesheet" href="~/css/forms.css" />
+    <link rel="stylesheet" href="~/css/tables.css" />
 }
 
-<form action="/category/edit/@Model.Id" method="post">
-    @Html.AntiForgeryToken()
-    <input type="hidden" id="Id" name="Id" value="@Model?.Id" />
-    <div>
-        <label for="Name">Name</label>
-        <input type="text" id="Name" name="Name" value="@Model?.Name"/>
-    </div>
-            <div>
-        <label for="GroupId">Group</label>
-        <select name="GroupId" id="GroupId">
-            @foreach (var grp in (ViewData["groups"] as IEnumerable<StacklyBackend.Models.Group>) ?? Array.Empty<StacklyBackend.Models.Group>())
-            {
-                <option value='@grp.Id' selected='@(Model?.GroupId == grp.Id ? "selected" : null)'>@grp.Name</option>
-            }
-        </select>
-    </div>
-    <button type="submit">Edit</button>
-</form>
+<div class="entry-section">
+    <a href="/category" class="btn-back" aria-label="Go back">
+        <i class="fa-solid fa-chevron-left"></i>
+    </a>
+    <h2>Edit - @Model.Name</h2>
+</div>
+
+<div class="info-section">
+    <p>Update category details below.</p>
+</div>
+
+<div class="form-container">
+    <form-builder controller="Category" action="Edit" method="post">
+        
+        <input type="hidden" name="Id" value="@Model.Id" />
+
+        <form-input-builder for="Name">
+            Name
+        </form-input-builder>
+
+        <form-select-builder 
+            for="GroupId" 
+            items="@groupSelectList"
+            option-label="-- Select Group --">
+            Assigned Group
+        </form-select-builder>
+
+        <div class="form-actions" style="margin-top: 2rem;">
+            <form-submit-builder>Save Changes</form-submit-builder>
+        </div>
+        
+    </form-builder>
+</div>

@@ -1,28 +1,96 @@
 @model List<StacklyBackend.Models.Group>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Groups";
+}
+@section styles {
+    <link rel="stylesheet" href="~/css/tables.css" />
 }
 
-<h2>Group - @ViewData["Title"]</h2>
-<a href="/group/create"><button>Add new group</button></a>
-<p>Groups list: </p>
-<table>
-    <tr>
-        <th>Id</th>
-        <th>Name</th>
-        <th>UsersInGroup</th>
-        <th>Actions</th>
-    </tr>
-    @foreach (var group in Model.ToArray() ?? Array.Empty<StacklyBackend.Models.Group>())
+<div class="entry-section">
+    <a href="@Url.Action("Index","Home")" class="btn-back" aria-label="Go back">
+        <i class="fa-solid fa-chevron-left"></i>
+    </a>
+    <h2>@ViewData["Title"]</h2>
+</div>
+
+<div class="info-section">
+    <p>Manage user groups and members access.</p>
+    </div>
+
+<div class="toolbar-section">
+    <a asp-controller="Group" asp-action="Create" class="btn-primary">
+        <i class="fa-solid fa-plus"></i>
+        Add New Group
+    </a>
+</div>
+
+<div class="table-container">
+    @if (Model == null || !Model.Any())
     {
-        <tr>
-            <td>@group.Id</td>
-            <td>@group.Name</td>
-            <td>@group.Users.Count()</td>
-            <td><a href="/group/delete/@group.Id">Delete</a></td>
-            <td><a href="/group/edit/@group.Id">Edit</a></td>
-            <td><a href="/group/details/@group.Id">Details</a></td>
-        </tr>
+        <div class="empty-state">
+            <i class="fa-solid fa-users-rectangle"></i> <h3>No groups found</h3>
+            <p>Create your first group to start organizing users.</p>
+        </div>
     }
-</table>
+    else
+    {
+        <table class="stackly-table">
+            <thead>
+                <tr>
+                    <th class="col-id">ID</th>
+                    <th>Group Name</th>
+                    <th class="text-center">Members</th> 
+                    <th class="col-actions">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var group in Model)
+                {
+                    <tr>
+                        <td class="col-id" title="@group.Id">
+                            <span class="cell-id-mono">#@group.Id</span>
+                        </td>
+                        
+                        <td class="cell-name-bold">
+                            @group.Name
+                        </td>
+                        
+                        <td class="text-center">
+                            <span class="count-pill @((group.Users?.Count ?? 0) == 0 ? "empty" : "")">
+                                @(group.Users?.Count ?? 0)
+                            </span> 
+                        </td>
+                        
+                        <td class="col-actions">
+                            <div class="table-actions">
+                                <a asp-action="Edit" asp-route-id="@group.Id" class="btn-card-action" title="Edit">
+                                    <i class="fa-solid fa-pen"></i>
+                                </a>
+
+                                <button type="button" 
+                                        class="btn-card-action delete" 
+                                        title="Delete"
+                                        onclick="confirmDeleteGroup('@group.Id', '@group.Name')">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+
+<script>
+    function confirmDeleteGroup(id, name) {
+        document.getElementById('deleteItemName').innerText = name;
+        
+        var baseUrl = '@Url.Action("Delete", "Group")';
+        document.getElementById('deleteForm').action = baseUrl + '/' + id;
+        
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
+</script>

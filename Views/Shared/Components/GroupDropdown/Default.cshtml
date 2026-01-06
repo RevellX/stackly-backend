@@ -2,7 +2,7 @@
 
 <form asp-controller="Group" asp-action="SetGroup" method="post">
     <select name="selectedGroupId" onchange="this.form.submit()">
-        <option disabled selected>-- Wybierz grupę --</option>            
+        <option disabled selected>-- Select group --</option>            
         @foreach (var group in Model.Groups)
         {
             <option value="@group.Value"

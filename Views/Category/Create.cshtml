@@ -1,37 +1,54 @@
 @model StacklyBackend.Models.CategoryCreate
-@using Microsoft.CodeAnalysis.Differencing
 @{
-    var error = ViewData["Error"] as string;
-    ViewData["Title"] = "Create";
-}
-<h2>Category - @ViewData["Title"]</h2>
-<p>Selected group:</p>
-@await Component.InvokeAsync("GroupDropdown")
-<a href="/category"><button aria-label="Go back">Go to list</button></a>
-<p>Category form: </p>
+    ViewData["Title"] = "Create Category";
 
-@if (!string.IsNullOrEmpty(error))
-{
-    <div role="alert" class="validation-summary-errors">
-        @error
-    </div>
+    // 1. Logika przygotowania danych do Selecta (podobnie jak w Edit)
+    // Musisz upewnić się, że Controller przekazuje ViewData["groups"]!
+    var rawGroups = ViewData["groups"] as IEnumerable<StacklyBackend.Models.Group> 
+                    ?? Enumerable.Empty<StacklyBackend.Models.Group>();
+    
+    // 2. Sprytny ruch: Jeśli mamy wybraną grupę globalnie (z ViewBaga), 
+    // ustawiamy ją jako domyślnie zaznaczoną w dropdownie.
+    var preselectedGroupId = ViewBag.CurrentGroupId as string; 
+    
+    var groupSelectList = new SelectList(rawGroups, "Id", "Name", preselectedGroupId);
 }
 
-<form action="/category/create" method="post">
-    @Html.AntiForgeryToken()
-    <div>
-        <label for="Name">Name</label>
-        <input type="text" id="Name" name="Name" value="@Model?.Name"/>
-    </div>
-        <div>
-        <label for="GroupId">Group</label>
-        <select name="GroupId" id="GroupId" value="@Model?.GroupId">
-        <option disabled selected>-- Wybierz grupę --</option>            
-        @foreach (var grp in (ViewData["groups"] as IEnumerable<StacklyBackend.Models.Group>) ?? Array.Empty<StacklyBackend.Models.Group>())
-            {
-                <option selected='@(Model?.GroupId == grp.Id ? "selected" : null)' value="@grp.Id">@grp.Name</option>
-            }
-        </select>
-    </div>
-    <button type="submit">Create</button>
-</form>
+@section Styles {
+    <link rel="stylesheet" href="~/css/forms.css" />
+}
+
+<div class="entry-section">
+    <a href="@Url.Action("Index")" class="btn-back" aria-label="Go back">
+        <i class="fa-solid fa-chevron-left"></i>
+    </a>
+    
+    <h2>@ViewData["Title"]</h2>
+</div>
+
+<div class="info-section">
+    <p>Create a new category. You can assign it to any group directly below.</p>
+</div>
+
+<div class="form-container">
+    <form-builder controller="Category" action="Create" method="post">
+        
+        <form-input-builder for="Name">
+            Category Name
+        </form-input-builder>
+
+        <form-select-builder 
+            for="GroupId" 
+            items="@groupSelectList" 
+            option-label="-- Select Group --">
+            Assign to Group
+        </form-select-builder>
+
+        <div class="form-actions" style="margin-top: 2rem;">
+            <form-submit-builder>
+                Create Category
+            </form-submit-builder>
+        </div>
+
+    </form-builder>
+</div>

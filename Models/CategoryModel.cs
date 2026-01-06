@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace StacklyBackend.Models;
 
@@ -10,6 +12,7 @@ public class Category
     public string Name { get; set; } = string.Empty;
     public string GroupId { get; set; } = string.Empty;
     public Group Group { get; set; } = null!;
+    public List<Item> Items { get; set; } = [];
 
     public static Category? GetCategoryById(AppDbContext _context, string categoryId, string userId)
     {
@@ -20,7 +23,11 @@ public class Category
 
     public static List<Category> GetCategoriesByGroupId(AppDbContext _context, string groupId, string userId)
     {
-        return _context.Categories.Where(c =>
+        return _context.Categories
+            .Include(c => c.Group)
+            .Include(c => c.Items)
+            .Include(c => c.Group)
+            .Where(c =>
             c.GroupId == groupId &&
                 (c.Group.OwnerId == userId ||
                 c.Group.Users.Any(u => u.Id == userId))
