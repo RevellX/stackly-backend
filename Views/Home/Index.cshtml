@@ -2,42 +2,32 @@
     ViewData["Title"] = "Home Page";
 }
 
-<main class="dashboard-content">
-  <header class="welcome-header">
-    <h1>Witaj w Stackly!</h1>
-    <p>Twoje centrum zarządzania przedmiotami i grupami.</p>
-  </header>
+<div class="dashboard-container">
+    <header class="dashboard-header">
+        <h1>Welcome to Stackly</h1>
+        <p>Manage your assets and collaborate with your team</p>
+    </header>
 
-  <section class="stats-grid">
-    <div class="stat-card">
-      <span class="stat-label">Przedmioty</span>
-      <span class="stat-value">@ViewData["items_stored_total"]</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-label">Kategorie</span>
-      <span class="stat-value">@ViewData["categories_stored_total"]</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-label">Użytkownicy</span>
-      <span class="stat-value">@ViewData["users_stored_total"]</span>
-    </div>
-  </section>
+    <div class="tiles-grid">
+        <div class="tile">
+            <div class="tile-icon">👥</div>
+            <h3>Groups & Teams</h3>
+            <p>Create shared workspaces and invite other users by entering their <b>email address</b> to collaborate.</p>
+            <a href="/Group" class="tile-link">Manage Groups</a>
+        </div>
 
-  <section class="info-section">
-    <h2>Co możesz tutaj zrobić?</h2>
-    <div class="features-grid">
-      <div class="feature-item">
-        <h3>📂 Grupy i Kategorie</h3>
-        <p>Twórz główne grupy projektowe i dziel je na mniejsze kategorie dla lepszej organizacji.</p>
-      </div>
-      <div class="feature-item">
-        <h3>📦 Zarządzanie Przedmiotami</h3>
-        <p>Dodawaj przedmioty, określaj ich ilość, dodawaj opisy oraz zdjęcia, by nic nie zginęło.</p>
-      </div>
-      <div class="feature-item">
-        <h3>👥 Współpraca</h3>
-        <p>Zaproś innych użytkowników wpisując ich e-mail. Wspólnie możecie edytować zasoby grupy.</p>
-      </div>
+        <div class="tile">
+            <div class="tile-icon">📁</div>
+            <h3>Categories</h3>
+            <p>Organize your items into logical collections within your groups for better structure.</p>
+            <a href="/Category" class="tile-link">View Categories</a>
+        </div>
+
+        <div class="tile">
+            <div class="tile-icon">📦</div>
+            <h3>New Item</h3>
+            <p>Add new assets with <b>names, descriptions, quantities, and photos</b> to your database.</p>
+            <a href="/Item/Create" class="tile-link">Add Now</a>
+        </div>
     </div>
-  </section>
-</main>
+</div>
