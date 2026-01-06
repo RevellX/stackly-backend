@@ -25,7 +25,7 @@ public class ItemController : Controller
     {
         var selectedGroupId = HttpContext.Session.GetString("SelectedGroupId");
         var userId = _userManager.GetUserId(User);
-        
+
         if (string.IsNullOrEmpty(selectedGroupId))
         {
             ViewBag.IsGroupSelected = false;
@@ -33,11 +33,11 @@ public class ItemController : Controller
             ViewData["search"] = query.Search;
             return View(new List<Item>());
         }
-        
+
         ViewBag.IsGroupSelected = true;
-        
+
         var items = Item.GetItemsByGroupId(_context, selectedGroupId, userId!).AsQueryable();
-        
+
         string? search = string.IsNullOrWhiteSpace(query.Search) ? null : $"%{query.Search}%";
 
         if (!string.IsNullOrEmpty(search))
@@ -58,11 +58,11 @@ public class ItemController : Controller
 
         if (query.MaxQuantity.HasValue)
             items = items.Where(i => i.Quantity <= query.MaxQuantity.Value);
-        
+
         ViewData["search"] = query.Search;
         ViewData["category"] = query.Category;
         ViewData["categories"] = Category.GetCategoriesByGroupId(_context, selectedGroupId, userId!);
-        
+
         return View(items.ToList());
     }
 
@@ -93,7 +93,7 @@ public class ItemController : Controller
     {
         var selectedGroupId = HttpContext.Session.GetString("SelectedGroupId");
         var userId = _userManager.GetUserId(User);
-        
+
         if (string.IsNullOrEmpty(selectedGroupId))
         {
             return RedirectToAction("Index", "Item"); // Lub do wyboru grupy
@@ -103,68 +103,60 @@ public class ItemController : Controller
         {
             var category = _context.Categories.FirstOrDefault(c => c.Id == item.CategoryId);
 
-            if (category == null || category.GroupId != selectedGroupId)
+            if (!Category.UserCanAccessCategory(_context, item.CategoryId, userId!))
             {
-                ModelState.AddModelError("CategoryId", "Invalid category for the selected group.");
+                return Forbid();
             }
-            else
+            string id;
+            do
             {
-                string id;
-                do
-                {
-                    id = Generator.GetRandomString(StringType.Alphanumeric, StringCase.Lowercase, 10);
-                } while (_context.Items.Any(p => p.Id == id));
-                
-                var newItem = new Item
-                {
-                    Id = id,
-                    Name = item.Name,
-                    Description = item.Description,
-                    Quantity = item.Quantity,
-                    CategoryId = item.CategoryId
-                    // GroupId = selectedGroupId
-                };
+                id = Generator.GetRandomString(StringType.Alphanumeric, StringCase.Lowercase, 10);
+            } while (_context.Items.Any(p => p.Id == id));
 
-                _context.Items.Add(newItem);
-                
-                if (item.Files is not null && item.Files.Count > 0)
-                {
-                    const long MaxFileSize = 10 * 1024 * 1024; // 10 MB
-                    var uploadsPath = Path.Combine(AppContext.BaseDirectory, "Uploads", "items", id);
-                    Directory.CreateDirectory(uploadsPath);
+            var newItem = new Item
+            {
+                Id = id,
+                Name = item.Name,
+                Description = item.Description,
+                Quantity = item.Quantity,
+                CategoryId = item.CategoryId
+            };
 
-                    foreach (var file in item.Files)
+            _context.Items.Add(newItem);
+
+            if (item.Files is not null && item.Files.Count > 0)
+            {
+                const long MaxFileSize = 10 * 1024 * 1024; // 10 MB
+                List<string> allowedExtensions = [".jpg", ".jpeg", ".png"];
+                var uploadsPath = Path.Combine(AppContext.BaseDirectory, "Uploads", "items", id);
+                Directory.CreateDirectory(uploadsPath);
+
+                foreach (var file in item.Files)
+                {
+                    if (file.Length > MaxFileSize)
                     {
-                        if (file.Length > MaxFileSize)
-                        {
-                            ModelState.AddModelError("Files", $"File {file.FileName} too large. Max 10 MB.");
-                            goto ErrorHandler;
-                        }
+                        ModelState.AddModelError("Files", $"File {file.FileName} too large. Max 10 MB.");
+                        continue;
+                    }
 
-                        string newId;
-                        do
-                        {
-                            newId = Generator.GetRandomString(StringType.Alphanumeric, StringCase.Lowercase, 10);
-                        } while (_context.ItemFiles.Any(p => p.Id == newId));
+                    string newId;
+                    do
+                    {
+                        newId = Generator.GetRandomString(StringType.Alphanumeric, StringCase.Lowercase, 10);
+                    } while (_context.ItemFiles.Any(p => p.Id == newId));
 
-                        var storedFileName = $"{newId}{Path.GetExtension(file.FileName)}";
-                        var filePath = Path.Combine(uploadsPath, storedFileName);
+                    var fileExtension = Path.GetExtension(file.FileName);
+                    if (!allowedExtensions.Contains(fileExtension))
+                    {
+                        ModelState.AddModelError("Files", $"File extension ${fileExtension} is not allowed");
+                        continue;
+                    }
+                    var storedFileName = $"{newId}{fileExtension}";
+                    var filePath = Path.Combine(uploadsPath, storedFileName);
 
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await file.CopyToAsync(stream);
-                        }
-
-                        var dbFile = new ItemFile
-                        {
-                            Id = newId,
-                            ItemId = id,
-                            OriginalFileName = file.FileName,
-                            StoredFileName = storedFileName,
-                            ContentType = file.ContentType
-                        };
-
-                        _context.ItemFiles.Add(dbFile);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
                     }
 
                     var dbFile = new ItemFile
@@ -184,7 +176,6 @@ public class ItemController : Controller
             return RedirectToAction("Index");
         }
         ViewData["categories"] = _context.Categories.ToList();
-        ViewData["error"] = "There has been an error while creating new item";
         foreach (var state in ModelState)
         {
             // Console.WriteLine($"{state.Key}: {state.Value.ValidationState} {state.Value.Errors}");
@@ -194,28 +185,17 @@ public class ItemController : Controller
                 {
                     Console.WriteLine($"{erros.ErrorMessage}");
                 }
-                
+
                 await _context.SaveChangesAsync();
                 return RedirectToAction("Index");
             }
         }
 
-        ErrorHandler:
-        
         ViewBag.IsGroupSelected = true;
-        
+
         var categoriesList = Category.GetCategoriesByGroupId(_context, selectedGroupId, userId!);
-        
+
         ViewData["categories"] = new SelectList(categoriesList, "Id", "Name", item.CategoryId);
-        
-        // debug
-        // foreach (var state in ModelState)
-        // {
-        //     if (state.Value.Errors.Any())
-        //     {
-        //         Console.WriteLine($"Field: {state.Key}, Error: {state.Value.Errors.First().ErrorMessage}");
-        //     }
-        // }
 
         return View(item);
     }
@@ -224,8 +204,8 @@ public class ItemController : Controller
     public ActionResult Details(string id)
     {
         var userId = _userManager.GetUserId(User);
-        var item = Item.GetItemById(_context, id, userId!); 
-        
+        var item = Item.GetItemById(_context, id, userId!);
+
         if (item is null)
             return NotFound();
 
@@ -242,7 +222,7 @@ public class ItemController : Controller
 
         var item = Item.GetItemById(_context, id, userId!);
         if (item is null) return NotFound();
-        
+
         var categories = Category.GetCategoriesByGroupId(_context, selectedGroupId, userId!);
         ViewData["categories"] = new SelectList(categories, "Id", "Name", item.CategoryId);
 
@@ -263,7 +243,7 @@ public class ItemController : Controller
         {
             var dbitem = Item.GetItemById(_context, id, userId!);
             if (dbitem is null) return NotFound();
-            
+
             if (!string.IsNullOrEmpty(item.CategoryId))
             {
                 var cat = _context.Categories.FirstOrDefault(c => c.Id == item.CategoryId);
@@ -278,10 +258,11 @@ public class ItemController : Controller
             if (!string.IsNullOrEmpty(item.Name)) dbitem.Name = item.Name;
             if (!string.IsNullOrEmpty(item.Description)) dbitem.Description = item.Description;
             if (item.Quantity.HasValue) dbitem.Quantity = (int)item.Quantity;
-            
+
             if (item.Files is not null && item.Files.Count > 0)
             {
                 const long MaxFileSize = 10 * 1024 * 1024;
+                List<string> allowedExtensions = [".jpg", ".jpeg", ".png"];
                 var uploadsPath = Path.Combine(AppContext.BaseDirectory, "Uploads", "items", id);
                 Directory.CreateDirectory(uploadsPath);
 
@@ -289,18 +270,23 @@ public class ItemController : Controller
                 {
                     if (file.Length > MaxFileSize)
                     {
-                         ModelState.AddModelError("Files", $"File {file.FileName} too large.");
-                         goto EditErrorHandler;
+                        ModelState.AddModelError("Files", $"File {file.FileName} too large.");
+                        goto EditErrorHandler;
                     }
-                    
+
                     string newId;
                     do
                     {
                         newId = Generator.GetRandomString(StringType.Alphanumeric, StringCase.Lowercase, 10);
                     } while (_context.ItemFiles.Any(p => p.Id == newId));
 
-                    var storedFileName = $"{newId}{Path.GetExtension(file.FileName)}";
-                    var filePath = Path.Combine(uploadsPath, storedFileName);
+                    var fileExtension = Path.GetExtension(file.FileName);
+                    if (!allowedExtensions.Contains(fileExtension))
+                    {
+                        ModelState.AddModelError("Files", $"File extension ${fileExtension} is not allowed");
+                        continue;
+                    }
+                    var storedFileName = $"{newId}{fileExtension}"; var filePath = Path.Combine(uploadsPath, storedFileName);
 
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
@@ -320,13 +306,13 @@ public class ItemController : Controller
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToAction("Details", new {id = id});
+            return RedirectToAction("Details", new { id = id });
         }
 
-        EditErrorHandler:
+    EditErrorHandler:
         var categories = Category.GetCategoriesByGroupId(_context, selectedGroupId, userId!);
         ViewData["categories"] = new SelectList(categories, "Id", "Name", item.CategoryId);
-        
+
         return View(item);
     }
 
@@ -346,9 +332,9 @@ public class ItemController : Controller
     {
         var userId = _userManager.GetUserId(User);
         var item = Item.GetItemById(_context, id, userId!);
-        
+
         if (item is null) return NotFound();
-        
+
         foreach (var file in item.Files)
         {
             var filePath = Path.Combine(AppContext.BaseDirectory, "Uploads", "items", file.ItemId, file.StoredFileName);
@@ -358,14 +344,14 @@ public class ItemController : Controller
             }
             _context.ItemFiles.Remove(file);
         }
-        
+
         _context.Items.Remove(item);
         _context.SaveChanges();
         return RedirectToAction("Index");
     }
 
     // --- METODY DO PLIKÓW (PREVIEW / DOWNLOAD / REMOVE) ---
-    
+
     [Authorize]
     public async Task<IActionResult> Preview(string fileId)
     {
