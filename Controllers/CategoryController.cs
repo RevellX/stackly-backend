@@ -25,40 +25,9 @@ public class CategoryController : Controller
     public async Task<IActionResult> Index()
     {
         var userId = _userManager.GetUserId(User);
-        var selectedId = HttpContext.Session.GetString("SelectedGroupId");
-        
-        bool hasGroup = !string.IsNullOrEmpty(selectedId);
-        ViewBag.IsGroupSelected = hasGroup;
-
-        if (!hasGroup)
-        {
-            return View(new List<Category>());
-        }
-
-        var categories = await _context.Categories
-            .Where(c => c.GroupId == selectedId)
-            .Include(c => c.Group)
-            .ToListAsync();
-        ;
-        
-        var countsDict = await _context.Items
-            .Where(i => i.Category.GroupId == selectedId)
-            .GroupBy(i => i.CategoryId)
-            .Select(g => new { Id = g.Key, Count = g.Count() })
-            .ToDictionaryAsync(x => x.Id, x => x.Count); 
-        
-        foreach (var cat in categories)
-        {
-            if (cat.Id != null && countsDict.ContainsKey(cat.Id))
-            {
-                cat.DisplayCount = countsDict[cat.Id];
-            }
-            else
-            {
-                cat.DisplayCount = 0;
-            }
-        }
-
+        var selectedId = HttpContext.Session.GetString("SelectedGroupId") ?? "";
+        var categories = Category.GetCategoriesByGroupId(_context, selectedId!, userId!);
+        ViewBag.IsGroupSelected = categories.Count() == 0 ? false : true;
         return View(categories);
 
         // return View(Category.GetCategoriesByGroupId(_context, selectedId, userId!));

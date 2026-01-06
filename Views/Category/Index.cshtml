@@ -81,8 +81,8 @@ else
                                 </span>
                             </td>
                             <td class="text-center">
-                                <span class="count-pill @(category.DisplayCount == 0 ? "empty" : "")">
-                                    @category.DisplayCount
+                                <span class="count-pill @(category.Items.Count() == 0 ? "empty" : "")">
+                                    @category.Items.Count()
                                 </span> 
                             </td>
                             
