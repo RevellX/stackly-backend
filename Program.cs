@@ -8,7 +8,7 @@ var connectionString = builder.Configuration.GetConnectionString("ApplicationDbC
 // Add services to the container.
 
 builder.Services.AddDbContext<AppDbContext>();
-builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddDefaultIdentity<User>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>();
 
