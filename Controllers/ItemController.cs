@@ -91,67 +91,56 @@ public class ItemController : Controller
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> Create([Bind(include: "Name,Description,Quantity,CategoryId,Files")] ItemCreate item)
     {
-        var selectedGroupId = HttpContext.Session.GetString("SelectedGroupId");
+        var selectedGroupId = HttpContext.Session.GetString("SelectedGroupId") ?? "";
         var userId = _userManager.GetUserId(User);
-
-        if (string.IsNullOrEmpty(selectedGroupId))
+        var dbCategory = Category.GetCategoryById(_context, item.CategoryId, userId!);
+        if (dbCategory is null)
+            return NotFound();
+        if (!Group.IsUserGroupMember(_context, dbCategory.GroupId, userId!))
         {
-            return RedirectToAction("Index", "Item"); // Lub do wyboru grupy
+            return Forbid();
         }
-
         if (ModelState.IsValid)
         {
-            var category = _context.Categories.FirstOrDefault(c => c.Id == item.CategoryId);
-
-            if (!Category.UserCanAccessCategory(_context, item.CategoryId, userId!))
-            {
-                return Forbid();
-            }
             string id;
             do
             {
                 id = Generator.GetRandomString(StringType.Alphanumeric, StringCase.Lowercase, 10);
-            } while (_context.Items.Any(p => p.Id == id));
+            } while (_context.Items.Any(p => p.Id.Equals(id)));
 
-            var newItem = new Item
+            _context.Items.Add(new Item
             {
                 Id = id,
                 Name = item.Name,
                 Description = item.Description,
                 Quantity = item.Quantity,
                 CategoryId = item.CategoryId
-            };
-
-            _context.Items.Add(newItem);
+            });
 
             if (item.Files is not null && item.Files.Count > 0)
             {
                 const long MaxFileSize = 10 * 1024 * 1024; // 10 MB
-                List<string> allowedExtensions = [".jpg", ".jpeg", ".png"];
-                var uploadsPath = Path.Combine(AppContext.BaseDirectory, "Uploads", "items", id);
+                var uploadsPath = Path.Combine(
+                        AppContext.BaseDirectory,
+                        "Uploads",
+                        "items",
+                        id
+                );
                 Directory.CreateDirectory(uploadsPath);
 
                 foreach (var file in item.Files)
                 {
                     if (file.Length > MaxFileSize)
                     {
-                        ModelState.AddModelError("Files", $"File {file.FileName} too large. Max 10 MB.");
-                        continue;
+                        return BadRequest($"File ${file.FileName} too large. Maximum allowed size is 10 MB.");
                     }
-
                     string newId;
                     do
                     {
                         newId = Generator.GetRandomString(StringType.Alphanumeric, StringCase.Lowercase, 10);
-                    } while (_context.ItemFiles.Any(p => p.Id == newId));
+                    } while (_context.ItemFiles.Any(p => p.Id.Equals(newId)));
 
-                    var fileExtension = Path.GetExtension(file.FileName);
-                    if (!allowedExtensions.Contains(fileExtension))
-                    {
-                        ModelState.AddModelError("Files", $"File extension ${fileExtension} is not allowed");
-                        continue;
-                    }
-                    var storedFileName = $"{newId}{fileExtension}";
+                    var storedFileName = $"{newId}{Path.GetExtension(file.FileName)}";
                     var filePath = Path.Combine(uploadsPath, storedFileName);
 
                     using (var stream = new FileStream(filePath, FileMode.Create))
@@ -172,31 +161,11 @@ public class ItemController : Controller
                 }
             }
 
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
             return RedirectToAction("Index");
         }
-        ViewData["categories"] = _context.Categories.ToList();
-        foreach (var state in ModelState)
-        {
-            // Console.WriteLine($"{state.Key}: {state.Value.ValidationState} {state.Value.Errors}");
-            if (state.Key == "Files")
-            {
-                foreach (var erros in state.Value.Errors)
-                {
-                    Console.WriteLine($"{erros.ErrorMessage}");
-                }
-
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Index");
-            }
-        }
-
-        ViewBag.IsGroupSelected = true;
-
-        var categoriesList = Category.GetCategoriesByGroupId(_context, selectedGroupId, userId!);
-
-        ViewData["categories"] = new SelectList(categoriesList, "Id", "Name", item.CategoryId);
-
+        var categories = Category.GetCategoriesByGroupId(_context, selectedGroupId, userId!);
+        ViewData["categories"] = new SelectList(categories, "Id", "Name", item.CategoryId);
         return View(item);
     }
 
@@ -234,59 +203,54 @@ public class ItemController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(string id, [Bind(include: "Name,Description,Quantity,CategoryId,Files")] ItemEdit item)
     {
-        var selectedGroupId = HttpContext.Session.GetString("SelectedGroupId");
         var userId = _userManager.GetUserId(User);
-
-        if (string.IsNullOrEmpty(selectedGroupId)) return RedirectToAction("Index");
+        var selectedGroupId = HttpContext.Session.GetString("SelectedGroupId") ?? "";
+        ViewBag.IsGroupSelected = selectedGroupId == "" ? false : true;
 
         if (ModelState.IsValid)
         {
             var dbitem = Item.GetItemById(_context, id, userId!);
-            if (dbitem is null) return NotFound();
+            if (dbitem is null)
+                return NotFound();
 
+            if (!string.IsNullOrEmpty(item.Name))
+                dbitem.Name = item.Name;
+            if (!string.IsNullOrEmpty(item.Description))
+                dbitem.Description = item.Description;
+            if (item.Quantity.HasValue)
+                dbitem.Quantity = (int)item.Quantity;
             if (!string.IsNullOrEmpty(item.CategoryId))
             {
-                var cat = _context.Categories.FirstOrDefault(c => c.Id == item.CategoryId);
-                if (cat == null || cat.GroupId != selectedGroupId)
-                {
-                    ModelState.AddModelError("CategoryId", "Invalid category.");
-                    goto EditErrorHandler;
-                }
+                if (!Category.UserCanAccessCategory(_context, item.CategoryId, userId!))
+                    return NotFound();
                 dbitem.CategoryId = item.CategoryId;
             }
 
-            if (!string.IsNullOrEmpty(item.Name)) dbitem.Name = item.Name;
-            if (!string.IsNullOrEmpty(item.Description)) dbitem.Description = item.Description;
-            if (item.Quantity.HasValue) dbitem.Quantity = (int)item.Quantity;
-
             if (item.Files is not null && item.Files.Count > 0)
             {
-                const long MaxFileSize = 10 * 1024 * 1024;
-                List<string> allowedExtensions = [".jpg", ".jpeg", ".png"];
-                var uploadsPath = Path.Combine(AppContext.BaseDirectory, "Uploads", "items", id);
+                const long MaxFileSize = 10 * 1024 * 1024; // 10 MB
+                var uploadsPath = Path.Combine(
+                        AppContext.BaseDirectory,
+                        "Uploads",
+                        "items",
+                        id
+                );
                 Directory.CreateDirectory(uploadsPath);
 
                 foreach (var file in item.Files)
                 {
                     if (file.Length > MaxFileSize)
                     {
-                        ModelState.AddModelError("Files", $"File {file.FileName} too large.");
-                        goto EditErrorHandler;
+                        return BadRequest($"File ${file.FileName} too large. Maximum allowed size is 10 MB.");
                     }
-
                     string newId;
                     do
                     {
                         newId = Generator.GetRandomString(StringType.Alphanumeric, StringCase.Lowercase, 10);
-                    } while (_context.ItemFiles.Any(p => p.Id == newId));
+                    } while (_context.ItemFiles.Any(p => p.Id.Equals(newId)));
 
-                    var fileExtension = Path.GetExtension(file.FileName);
-                    if (!allowedExtensions.Contains(fileExtension))
-                    {
-                        ModelState.AddModelError("Files", $"File extension ${fileExtension} is not allowed");
-                        continue;
-                    }
-                    var storedFileName = $"{newId}{fileExtension}"; var filePath = Path.Combine(uploadsPath, storedFileName);
+                    var storedFileName = $"{newId}{Path.GetExtension(file.FileName)}";
+                    var filePath = Path.Combine(uploadsPath, storedFileName);
 
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
@@ -301,18 +265,16 @@ public class ItemController : Controller
                         StoredFileName = storedFileName,
                         ContentType = file.ContentType
                     };
+
                     _context.ItemFiles.Add(dbFile);
                 }
             }
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction("Details", new { id = id });
+            _context.SaveChanges();
+            return Redirect(Request.Headers.Referer.ToString());
         }
-
-    EditErrorHandler:
-        var categories = Category.GetCategoriesByGroupId(_context, selectedGroupId, userId!);
-        ViewData["categories"] = new SelectList(categories, "Id", "Name", item.CategoryId);
-
+        var categoriesList = Category.GetCategoriesByGroupId(_context, selectedGroupId, userId!);
+        ViewData["categories"] = new SelectList(categoriesList, "Id", "Name", item.CategoryId);
         return View(item);
     }
 
